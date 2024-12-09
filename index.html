@@ -115,10 +115,14 @@
 
   <div id="message" class="message"></div>
 
-  <div class="recordings">
+  <div class="recordings" id="recordingsContainer">
     <h2>녹음결과</h2>
     <div id="recordingsList"></div>
   </div>
+
+  <footer>
+    © 2023 My Company. All rights reserved.
+  </footer>
 
   <script>
     let timerInterval;
@@ -128,29 +132,43 @@
     let timerRunning = false;
     let speechProgress = false;
     let recordingStarted = false;
+    let recordingSupported = false; // 녹음 지원 여부
 
     async function initializeMicrophone() {
-      try {
-        microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        console.log("Microphone initialized and ready to use.");
+      // 녹음 지원 여부 체크
+      recordingSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
 
-        mediaRecorder = new MediaRecorder(microphoneStream);
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunks.push(event.data);
-          }
-        };
-        mediaRecorder.onstop = () => {
-          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-          const audioURL = URL.createObjectURL(audioBlob);
-          saveRecording(audioURL);
-          audioChunks = [];
-          recordingStarted = false;
-        };
-      } catch (error) {
-        console.error("Microphone access denied.", error);
-        alert("Please allow microphone access to use this application.");
+      if (!recordingSupported) {
+        // 녹음 불가 시 녹음관련 UI 숨기기
+        const recordingsContainer = document.getElementById("recordingsContainer");
+        if (recordingsContainer) {
+          recordingsContainer.style.display = "none";
+        }
+      } else {
+        // 녹음 가능 시 마이크 초기화
+        try {
+          microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          console.log("Microphone initialized and ready to use.");
+
+          mediaRecorder = new MediaRecorder(microphoneStream);
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              audioChunks.push(event.data);
+            }
+          };
+          mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const audioURL = URL.createObjectURL(audioBlob);
+            saveRecording(audioURL);
+            audioChunks = [];
+            recordingStarted = false;
+          };
+        } catch (error) {
+          console.error("Microphone access denied.", error);
+          alert("Please allow microphone access to use this application.");
+        }
       }
+
       displayNextTime();
     }
 
@@ -163,7 +181,7 @@
     function resetTimer() {
       clearInterval(timerInterval);
       document.getElementById("message").textContent = "";
-      if (mediaRecorder && mediaRecorder.state === "recording") {
+      if (recordingSupported && mediaRecorder && mediaRecorder.state === "recording") {
         mediaRecorder.stop();
         console.log("Recording stopped during reset.");
       }
@@ -234,8 +252,9 @@
     }
 
     function startRecording() {
+      if (!recordingSupported) return; // 녹음 불가 시 무시
       if (!microphoneStream || !mediaRecorder) {
-        alert("Microphone is not initialized. Please allow access.");
+        alert("Microphone is not initialized or unsupported.");
         return;
       }
       audioChunks = [];
@@ -245,6 +264,7 @@
     }
 
     function saveRecording(audioURL) {
+      if (!recordingSupported) return; // 녹음 불가 시 무시
       const recordingsList = document.getElementById("recordingsList");
       const recordingTime = new Date().toLocaleTimeString();
       const fileName = `recording-${recordingTime.replace(/:/g, '-')}.webm`;
@@ -263,6 +283,7 @@
     }
 
     function stopRecording() {
+      if (!recordingSupported) return; // 녹음 불가 시 무시
       if (mediaRecorder && mediaRecorder.state === "recording") {
         mediaRecorder.stop();
         recordingStarted = false;
@@ -283,7 +304,6 @@
 
       speechProgress = true;
 
-      // 준비 타이머 -> 종료 후 말하기 타이머
       startTimer(
         parseInt(prepTime),
         "준비시간이 끝났습니다!",
@@ -291,8 +311,11 @@
           speakText("Speaking after beep...", () => {
             playBeep(() => {
               speechProgress = false; 
-              startRecording();
-              startTimer(parseInt(speakingTime), "Speaking Time Ended!", stopRecording);
+              // 녹음 가능할 때만 녹음 시작
+              if (recordingSupported) startRecording();
+              startTimer(parseInt(speakingTime), "Speaking Time Ended!", () => {
+                if (recordingSupported) stopRecording();
+              });
             });
           });
         }
@@ -327,9 +350,5 @@
       }
     }
   </script>
-
-  <footer style="margin-top:40px; font-size:0.9em; color:#666;">
-    © 2024 All rights reserved.
-  </footer>
 </body>
 </html>
