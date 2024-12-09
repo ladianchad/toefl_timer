@@ -10,6 +10,9 @@
       text-align: center;
       margin: 20px;
     }
+    h2 {
+      font-size: 1em;
+    }
     .timer {
       font-size: 10em;
       margin: 20px 20px;
@@ -69,7 +72,6 @@
       width: 100%;
     }
 
-    /* 스피너 스타일 */
     #spinner {
       display: none;
       position: absolute;
@@ -98,6 +100,7 @@
 </head>
 <body>
   <h1>TOEFL Timer</h1>
+  <h2>* 녹음 기능은 모바일에선 안됨</h2>
 
   <label for="taskSelection">유형 : </label>
   <select id="taskSelection" onchange="selectionChanged()">
@@ -132,20 +135,20 @@
     let timerRunning = false;
     let speechProgress = false;
     let recordingStarted = false;
-    let recordingSupported = false; // 녹음 지원 여부
+
+    // 모바일 환경 체크: 모바일이면 녹음 비활성화
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Silk|Opera Mini|Tablet/.test(navigator.userAgent);
+    let recordingSupported = !isMobile; // 모바일이면 녹음 지원 false
 
     async function initializeMicrophone() {
-      // 녹음 지원 여부 체크
-      recordingSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
-
       if (!recordingSupported) {
-        // 녹음 불가 시 녹음관련 UI 숨기기
+        // 모바일 환경이면 녹음 관련 UI 숨김
         const recordingsContainer = document.getElementById("recordingsContainer");
         if (recordingsContainer) {
           recordingsContainer.style.display = "none";
         }
       } else {
-        // 녹음 가능 시 마이크 초기화
+        // 녹음 가능 환경일 경우 마이크 초기화
         try {
           microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
           console.log("Microphone initialized and ready to use.");
@@ -252,7 +255,7 @@
     }
 
     function startRecording() {
-      if (!recordingSupported) return; // 녹음 불가 시 무시
+      if (!recordingSupported) return;
       if (!microphoneStream || !mediaRecorder) {
         alert("Microphone is not initialized or unsupported.");
         return;
@@ -264,7 +267,7 @@
     }
 
     function saveRecording(audioURL) {
-      if (!recordingSupported) return; // 녹음 불가 시 무시
+      if (!recordingSupported) return;
       const recordingsList = document.getElementById("recordingsList");
       const recordingTime = new Date().toLocaleTimeString();
       const fileName = `recording-${recordingTime.replace(/:/g, '-')}.webm`;
@@ -283,7 +286,7 @@
     }
 
     function stopRecording() {
-      if (!recordingSupported) return; // 녹음 불가 시 무시
+      if (!recordingSupported) return;
       if (mediaRecorder && mediaRecorder.state === "recording") {
         mediaRecorder.stop();
         recordingStarted = false;
@@ -310,8 +313,7 @@
         () => {
           speakText("Speaking after beep...", () => {
             playBeep(() => {
-              speechProgress = false; 
-              // 녹음 가능할 때만 녹음 시작
+              speechProgress = false;
               if (recordingSupported) startRecording();
               startTimer(parseInt(speakingTime), "Speaking Time Ended!", () => {
                 if (recordingSupported) stopRecording();
