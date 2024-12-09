@@ -238,7 +238,7 @@
     }
 
     function playBeep(callback) {
-      if (!recordingSupported) {
+      if (isMobile) {
         if (callback) callback();
         return;
       }
