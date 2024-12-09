@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TOEFL Timer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+    .timer {
+      font-size: 10em;
+      margin: 20px 20px;
+      position: relative;
+    }
+    button, select {
+      font-size: 1em;
+      font-weight: 500;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+    }
+    .btn-start {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      font-size: 1.2em;
+      font-weight: bold;
+      padding: 15px 30px;
+      border-radius: 5px;
+    }
+    .btn-start:hover {
+      background-color: #45a049;
+    }
+
+    .btn-reset {
+      background-color: #f44336;
+      color: white;
+      border: none;
+      font-size: 1.2em;
+      font-weight: bold;
+      padding: 15px 30px;
+      border-radius: 5px;
+    }
+    .btn-reset:hover {
+      background-color: #e53935;
+    }
+
+    .message {
+      font-size: 1.5em;
+      color: red;
+      margin-top: 20px;
+    }
+
+    .recordings {
+      margin-top: 20px;
+      text-align: left;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .recordings h2 {
+      text-align: center;
+    }
+    audio {
+      margin: 5px 0;
+      width: 100%;
+    }
+
+    /* 스피너 스타일 */
+    #spinner {
+      display: none;
+      position: absolute;
+      left: 50%;
+      top: 90%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 40px;
+      border: 4px solid #ccc;
+      border-top: 4px solid #333;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: translateX(-50%) rotate(0deg); }
+      100% { transform: translateX(-50%) rotate(360deg); }
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <h1>TOEFL Timer</h1>
+
+  <label for="taskSelection">유형 : </label>
+  <select id="taskSelection" onchange="selectionChanged()">
+    <option value="15_45">말하기 유형 1 (준비 15 초, 말하기 45 초)</option>
+    <option value="30_60">말하기 유형 2 (준비 30 초, 말하기 60 초)</option>
+    <option value="2160_Reading Section">읽기 (36 분)</option>
+  </select>
+
+  <div id="timer" class="timer">00:15
+    <div id="spinner"></div>
+  </div>
+
+  <button id="startBtn" class="btn-start" onclick="startSelectedTimer()">시작</button>
+  <button id="resetBtn" class="btn-reset" onclick="resetTimer()" style="display:none;">중지(초기화)</button>
+
+  <div id="message" class="message"></div>
+
+  <div class="recordings">
+    <h2>녹음결과</h2>
+    <div id="recordingsList"></div>
+  </div>
+
+  <script>
+    let timerInterval;
+    let mediaRecorder;
+    let audioChunks = [];
+    let microphoneStream = null;
+    let timerRunning = false;
+    let speechProgress = false;
+    let recordingStarted = false;
+
+    async function initializeMicrophone() {
+      try {
+        microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        console.log("Microphone initialized and ready to use.");
+
+        mediaRecorder = new MediaRecorder(microphoneStream);
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunks.push(event.data);
+          }
+        };
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          const audioURL = URL.createObjectURL(audioBlob);
+          saveRecording(audioURL);
+          audioChunks = [];
+          recordingStarted = false;
+        };
+      } catch (error) {
+        console.error("Microphone access denied.", error);
+        alert("Please allow microphone access to use this application.");
+      }
+      displayNextTime();
+    }
+
+    window.onload = initializeMicrophone;
+
+    function selectionChanged() {
+      resetTimer();
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      document.getElementById("message").textContent = "";
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        console.log("Recording stopped during reset.");
+      }
+      timerRunning = false;
+      speechProgress = false;
+      recordingStarted = false;
+      updateButtonVisibility();
+      displayNextTime();
+    }
+
+    function startTimer(seconds, message, callback = null) {
+      clearInterval(timerInterval);
+      const messageDisplay = document.getElementById("message");
+      messageDisplay.textContent = "";
+
+      let timeLeft = seconds;
+
+      function updateTimer() {
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        document.getElementById("timer").textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+        if (timeLeft > 0) {
+          timeLeft--;
+        } else {
+          clearInterval(timerInterval);
+          endTimer(message, callback);
+        }
+      }
+
+      updateTimer();
+      timerInterval = setInterval(updateTimer, 1000);
+      timerRunning = true;
+      updateButtonVisibility();
+    }
+
+    function endTimer(message, callback) {
+      document.getElementById("message").textContent = message;
+      if (callback) callback();
+      timerRunning = false;
+      updateButtonVisibility();
+      displayNextTime();
+    }
+
+    function speakText(text, callback) {
+      const synth = window.speechSynthesis;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.onend = () => {
+        if (callback) callback();
+      };
+      synth.speak(utterance);
+    }
+
+    function playBeep(callback) {
+      updateButtonVisibility();
+
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+      oscillator.connect(audioContext.destination);
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.5);
+
+      oscillator.onended = () => {
+        updateButtonVisibility();
+        if (callback) callback();
+      };
+    }
+
+    function startRecording() {
+      if (!microphoneStream || !mediaRecorder) {
+        alert("Microphone is not initialized. Please allow access.");
+        return;
+      }
+      audioChunks = [];
+      mediaRecorder.start();
+      recordingStarted = true;
+      console.log("Recording started.");
+    }
+
+    function saveRecording(audioURL) {
+      const recordingsList = document.getElementById("recordingsList");
+      const recordingTime = new Date().toLocaleTimeString();
+      const fileName = `recording-${recordingTime.replace(/:/g, '-')}.webm`;
+
+      const recordingItem = document.createElement("div");
+      recordingItem.innerHTML = `
+        <p><strong>Recorded at:</strong> ${recordingTime}</p>
+        <audio controls src="${audioURL}" preload="metadata"></audio><br/>
+        <a href="${audioURL}" download="${fileName}">Download</a>
+      `;
+      if (recordingsList.firstChild) {
+        recordingsList.insertBefore(recordingItem, recordingsList.firstChild);
+      } else {
+        recordingsList.appendChild(recordingItem);
+      }
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        recordingStarted = false;
+        console.log("Recording stopped.");
+      }
+    }
+
+    function startSelectedTimer() {
+      const taskSelection = document.getElementById("taskSelection").value;
+      const [prepTime, speakingTime] = taskSelection.split('_');
+
+      resetTimer();
+
+      if (taskSelection.includes("Reading")) {
+        startTimer(parseInt(prepTime), "Reading Time Ended!");
+        return;
+      }
+
+      speechProgress = true;
+
+      // 준비 타이머 -> 종료 후 말하기 타이머
+      startTimer(
+        parseInt(prepTime),
+        "준비시간이 끝났습니다!",
+        () => {
+          speakText("Speaking after beep...", () => {
+            playBeep(() => {
+              speechProgress = false; 
+              startRecording();
+              startTimer(parseInt(speakingTime), "Speaking Time Ended!", stopRecording);
+            });
+          });
+        }
+      );
+    }
+
+    function displayNextTime() {
+      const taskSelection = document.getElementById("taskSelection").value;
+      const [prepTime, speakingTime] = taskSelection.split('_');
+
+      if (taskSelection.includes("Reading")) {
+        const mins = Math.floor(parseInt(prepTime) / 60);
+        const secs = parseInt(prepTime) % 60;
+        document.getElementById("timer").textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+      } else {
+        const mins = Math.floor(parseInt(prepTime) / 60);
+        const secs = parseInt(prepTime) % 60;
+        document.getElementById("timer").textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+      }
+    }
+
+    function updateButtonVisibility() {
+      const startBtn = document.getElementById("startBtn");
+      const resetBtn = document.getElementById("resetBtn");
+
+      if (timerRunning || speechProgress || recordingStarted) {
+        startBtn.style.display = "none";
+        resetBtn.style.display = "inline-block";
+      } else {
+        startBtn.style.display = "inline-block";
+        resetBtn.style.display = "none";
+      }
+    }
+  </script>
+
+  <footer style="margin-top:40px; font-size:0.9em; color:#666;">
+    © 2024 All rights reserved.
+  </footer>
+</body>
+</html>
