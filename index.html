@@ -238,6 +238,10 @@
     }
 
     function playBeep(callback) {
+      if (!recordingSupported) {
+        if (callback) callback();
+        return;
+      }
       updateButtonVisibility();
 
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
