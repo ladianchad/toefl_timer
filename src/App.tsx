@@ -12,7 +12,7 @@ const App = () => {
     const [timeConfig, setTimeConfig] = useState(mode.option);
 
     return (
-        <div className="w-full h-full p-2 font-sans flex flex-col gap-2">
+        <div className="w-full h-full p-4 font-sans flex flex-col gap-2">
             <h1 className="text-2xl font-bold text-center pb-2.5">TOEFL UTILITIES</h1>
             <div className="flex flex-col gap-2 grow">
                 <ModeSelector onModeChange={(newMode) => {
