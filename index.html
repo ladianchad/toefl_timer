@@ -284,6 +284,8 @@
         startTimer(parseInt(prepTime), "Writing Time Ended!", () => {
           saveAnswer();
         });
+        const textarea = document.getElementById("writingTextarea");
+        textarea.focus();
         return;
       }
     }
