@@ -117,6 +117,8 @@
   <select id="taskSelection" onchange="selectionChanged()">
     <option value="15_45">말하기 유형 1 (준비 15 초, 말하기 45 초)</option>
     <option value="30_60">말하기 유형 2 (준비 30 초, 말하기 60 초)</option>
+    <option value="1200_Writing Section">쓰기 유형 1 (준비 30 초, 쓰기 20 분)</option>
+    <option value="600_Writing Section">쓰기 유형 2 (쓰기 10 분)</option>
     <option value="2160_Reading Section">읽기 (36 분)</option>
   </select>
 
@@ -315,8 +317,8 @@
 
       resetTimer();
 
-      if (taskSelection.includes("Reading")) {
-        startTimer(parseInt(prepTime), "Reading Time Ended!");
+      if (!taskSelection.includes("Speaking")) {
+        startTimer(parseInt(prepTime), taskSelection + " Time Ended!");
         return;
       }
 
@@ -328,7 +330,7 @@
         () => {
           speakText("Speaking after beep...", () => {
             playBeep(() => {
-              speechProgress = false;
+              speechProgress = false;xw
               if (recordingSupported) startRecording();
               startTimer(parseInt(speakingTime), "Speaking Time Ended!", () => {
                 if (recordingSupported) stopRecording();
