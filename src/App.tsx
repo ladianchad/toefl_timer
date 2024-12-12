@@ -1,8 +1,7 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import ModeSelector from "./component/ModeSelector";
 import {DefaultModes} from "./config/ModeConfig";
 import TimerControl from "./component/TimerControl";
-import {Mode} from "./global/types";
 import Timer from "./component/Timer";
 import Footer from "./component/Footer";
 
