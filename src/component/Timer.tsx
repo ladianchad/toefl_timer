@@ -1,4 +1,4 @@
-import {act, useCallback, useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import {ModeAction, ModeComment, TimeConfig} from "../global/types";
 
 interface TimerProps {
@@ -21,7 +21,9 @@ const Timer = ({
     const [timer, setTimer] = useState<number>(null)
 
     useEffect(() => {
-        setStartPoint(timeConfig.prepareTime ? -1 : 1);
+        const update = timeConfig.prepareTime ? -1 : 1;
+        setStartPoint(update);
+        setCurrentState(update);
         resetCounter(timeConfig);
     }, [timeConfig]);
 
@@ -30,6 +32,11 @@ const Timer = ({
     }, [comments]);
 
     useEffect(() => {
+        if (startPoint == -1 && currentState < 1) {
+            return
+        } else if (startPoint == 1 && currentState < 3) {
+            return;
+        }
         if (currentState == 1) {
             if (action?.beforeMiddle) {
                 action.beforeMiddle().then(() => {
@@ -38,8 +45,8 @@ const Timer = ({
             } else {
                 setCurrentState(c => c + 1)
             }
-        } else if(startPoint != currentState && currentState == 2) {
-            if(action?.middle){
+        } else if (currentState == 2) {
+            if (action?.middle) {
                 action.middle().then(() => {
                     setRemain(timeConfig.runTime)
                     startCount()
@@ -48,10 +55,10 @@ const Timer = ({
                 setRemain(timeConfig.runTime)
                 startCount()
             }
-        } else if(currentState == 3){
-            if(action?.end){
+        } else if (currentState == 3) {
+            if (action?.end) {
                 action.end().then(() => {
-                    setCurrentState(c => c +1);
+                    setCurrentState(c => c + 1);
                 })
             }
         }
@@ -90,24 +97,26 @@ const Timer = ({
     }, [timer]);
 
     const displayComment = useMemo(() => {
-        if(currentState == -1){
+        if (currentState == -1) {
             return comment?.beforeStart
-        } else if(currentState == 0) {
+        } else if (currentState == 0) {
             return comment?.start
-        } else if(currentState == 1){
+        } else if (currentState == 1) {
             return comment?.beforeMiddle
-        } else if(currentState == 2){
+        } else if (currentState == 2) {
             return comment?.middle
-        } else if(currentState == 3){
+        } else if (currentState == 3) {
             return comment?.end
         }
         return comment?.end
     }, [currentState])
 
     return (
-        <div className={"w-full flex flex-col gap-2 p-2" + (remain < 10 && currentState != startPoint ? " text-red-500" : "")}>
+        <div
+            className={"w-full flex flex-col gap-2 p-2" + (remain < 10 && currentState != startPoint ? " text-red-500" : "")}>
             <h3 className="w-full text-center font-bold text-2xl">남은 시간</h3>
-            <div className="flex items-center text-[5em] md:text-[8em] w-full text-center tracking-normal justify-center gap-2">
+            <div
+                className="flex items-center text-[5em] md:text-[8em] w-full text-center tracking-normal justify-center gap-2">
                 <span className="w-36 md:w-44">{Math.floor(remain / 60).toString().padStart(2, "0")}</span>
                 :
                 <span className="w-36 md:w-44">{Math.floor(remain % 60).toString().padStart(2, "0")}</span>
@@ -121,14 +130,14 @@ const Timer = ({
                 <span>{
                     currentState == startPoint ? "시작" : "초기화"
                 }</span>
-                    <button onClick={(event) => {
+                    <button onClick={() => {
                         if (currentState == startPoint) {
                             if (action?.beforeStart && startPoint == -1) {
                                 action.beforeStart().then(() => {
                                     startCount();
                                     setCurrentState(startPoint + 1)
                                 });
-                            } else if(action?.beforeMiddle && startPoint == 1) {
+                            } else if (action?.beforeMiddle && startPoint == 1) {
                                 action.beforeMiddle().then(() => {
                                     startCount();
                                     setCurrentState(startPoint + 1)

@@ -1,8 +1,11 @@
+import React from "react";
+
 export interface Mode {
     name: string
     option: TimeConfig
     action?: ModeAction
     comment?: ModeComment
+    contents?: React.ReactNode
 }
 
 export interface TimeConfig {
