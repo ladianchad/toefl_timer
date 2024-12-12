@@ -106,8 +106,8 @@ export const DefaultModes: Mode[] = [
             }
         },
         comment: {
-            beforeStart: "Writing 문제를 준비하세요.",
-            beforeMiddle: "Writing 준비 시간.",
+            beforeStart: "Reading 문제를 준비하세요.",
+            beforeMiddle: "Reading 준비 시간.",
             end: "수고하셨습니다."
         }
     }
