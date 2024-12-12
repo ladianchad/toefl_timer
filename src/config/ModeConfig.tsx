@@ -53,7 +53,7 @@ export const DefaultModes: Mode[] = [
         name: "쓰기 유형 1 (쓰기 20 분)",
         option: {
             prepareTime: 0,
-            runTime: 600
+            runTime: 1200
         },
         action: {
             async middle() {
@@ -75,7 +75,7 @@ export const DefaultModes: Mode[] = [
         name: "쓰기 유형 2 (쓰기 10 분)",
         option: {
             prepareTime: 0,
-            runTime: 1200
+            runTime: 600
         },
         action: {
             async middle() {
