@@ -38,6 +38,7 @@ const App = () => {
                     mode.contents
                 }
             </div>
+            <span className="text-xs font-bold flex justify-end">* 녹음 기능은 추후 추가 하겠습니다.</span>
             <Footer/>
         </div>
     );
