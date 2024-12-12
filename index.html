@@ -65,6 +65,35 @@
       margin-top: 20px;
     }
 
+    .recordings {
+      margin-top: 20px;
+      text-align: left;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .recordings h2 {
+      text-align: center;
+    }
+    audio {
+      margin: 5px 0;
+      width: 100%;
+    }
+
+    .btn-save {
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      font-size: 1.2em;
+      font-weight: bold;
+      padding: 10px 25px;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+    .btn-save:hover {
+      background-color: #1e88e5;
+    }
+
     .writing-section {
       display: none;
       margin-top: 30px;
@@ -102,8 +131,8 @@
 
   <label for="taskSelection">유형 : </label>
   <select id="taskSelection" onchange="selectionChanged()">
-    <option value="15_45">말하기 유형 1 (준비 15 초, 말하기 45 초)</option>
-    <option value="30_60">말하기 유형 2 (준비 30 초, 말하기 60 초)</option>
+    <option value="15_45_Speaking">말하기 유형 1 (준비 15 초, 말하기 45 초)</option>
+    <option value="30_60_Speaking">말하기 유형 2 (준비 30 초, 말하기 60 초)</option>
     <option value="1200_Writing">쓰기 유형 1 (쓰기 20 분)</option>
     <option value="600_Writing">쓰기 유형 2 (쓰기 10 분)</option>
     <option value="2160_Reading">읽기 (36 분)</option>
@@ -116,22 +145,76 @@
 
   <div id="message" class="message"></div>
 
+  <div class="recordings" id="recordingsContainer">
+    <h2>녹음결과</h2>
+    <div id="recordingsList"></div>
+  </div>
+
   <div class="writing-section" id="writingSection">
-    <h2>Writing 답안 적는 곳 (문법 검사 제거됨.)</h2>
-    <textarea spellcheck="false"></textarea>
+    <h2>Writing 답안 적는 곳</h2>
+    <!-- <button class="btn-save" onclick="saveAnswer()">답안 저장</button> -->
+    <textarea id ="writingTextarea" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="none" inputmode="none"></textarea>
   </div>
 
   <footer>
     © 2024 ladianchad. All rights reserved.
+
   </footer>
 
   <script>
     let timerInterval;
+    let mediaRecorder;
+    let audioChunks = [];
+    let microphoneStream = null;
     let timerRunning = false;
+    let speechProgress = false;
+    let recordingStarted = false;
+
+    // 모바일 환경 체크: 모바일이면 녹음 비활성화
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Silk|Opera Mini|Tablet/.test(navigator.userAgent);
+    let recordingSupported = !isMobile; // 모바일이면 녹음 지원 false
+
+    async function initializeMicrophone() {
+      if (!recordingSupported) {
+        // 모바일 환경이면 녹음 관련 UI 숨김
+        const recordingsContainer = document.getElementById("recordingsContainer");
+        if (recordingsContainer) {
+          recordingsContainer.style.display = "none";
+        }
+      } else {
+        // 녹음 가능 환경일 경우 마이크 초기화
+        try {
+          microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          console.log("Microphone initialized and ready to use.");
+
+          mediaRecorder = new MediaRecorder(microphoneStream);
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              audioChunks.push(event.data);
+            }
+          };
+          mediaRecorder.onstop = () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const audioURL = URL.createObjectURL(audioBlob);
+            saveRecording(audioURL);
+            audioChunks = [];
+            recordingStarted = false;
+          };
+        } catch (error) {
+          console.error("Microphone access denied.", error);
+          alert("Please allow microphone access to use this application.");
+        }
+      }
+
+      displayNextTime();
+    }
+
+    window.onload = initializeMicrophone;
 
     function selectionChanged() {
       resetTimer();
       const taskSelection = document.getElementById("taskSelection").value;
+      const audioSelection = document.getElementById("recordingsContainer");
       const writingSection = document.getElementById("writingSection");
 
       // 쓰기 유형 선택 시 Writing Section 표시
@@ -140,25 +223,109 @@
       } else {
         writingSection.style.display = "none";
       }
+
+      if (taskSelection.includes("Speaking")) {
+        audioSelection.style.display = "block";
+      } else {
+        audioSelection.style.display = "none";
+      }
+
     }
 
     function resetTimer() {
       clearInterval(timerInterval);
       document.getElementById("message").textContent = "";
+      if (recordingSupported && mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        console.log("Recording stopped during reset.");
+      }
       timerRunning = false;
+      speechProgress = false;
+      recordingStarted = false;
+      updateButtonVisibility();
       displayNextTime();
     }
 
     function startSelectedTimer() {
       const taskSelection = document.getElementById("taskSelection").value;
-      const [prepTime, type] = taskSelection.split('_');
+      const [prepTime, speakingTime] = taskSelection.split('_');
 
       resetTimer();
 
-      startTimer(parseInt(prepTime), `${type} Time Ended!`);
+      if (taskSelection.includes("Reading")) {
+        // Reading 유형: 별도 동작 없이 타이머 종료 시 메시지 출력
+        startTimer(parseInt(prepTime), "Reading Time Ended!");
+        return;
+      }
+
+      if (taskSelection.includes("Speaking")) {
+        // Speaking 유형: 녹음 시작 및 종료 처리
+        speechProgress = true;
+        startTimer(
+          parseInt(prepTime),
+          "준비시간이 끝났습니다!",
+          () => {
+            speakText("Speaking after beep...", () => {
+              playBeep(() => {
+                speechProgress = false;
+                if (recordingSupported) startRecording();
+                startTimer(parseInt(speakingTime), "Speaking Time Ended!", () => {
+                  if (recordingSupported) stopRecording();
+                });
+              });
+            });
+          }
+        );
+        return;
+      }
+
+      if (taskSelection.includes("Writing")) {
+        // Writing 유형: 타이머 종료 시 답안 자동 저장
+        startTimer(parseInt(prepTime), "Writing Time Ended!", () => {
+          saveAnswer();
+        });
+        return;
+      }
     }
 
-    function startTimer(seconds, message) {
+    function saveAnswer() {
+      // const textarea = document.getElementById("writingTextarea");
+      // const answersContainer = document.getElementById("answersContainer");
+      // const taskSelection = document.getElementById("taskSelection");
+      // const taskName = taskSelection.options[taskSelection.selectedIndex].text;
+
+      // const answer = textarea.value.trim();
+      // if (answer === "") {
+      //   alert("답안을 입력해주세요.");
+      //   return;
+      // }
+
+      // const currentTime = new Date().toLocaleTimeString();
+      // const answerDiv = document.createElement("div");
+      // answerDiv.className = "answer";
+
+      // const answerTitle = document.createElement("div");
+      // answerTitle.className = "answer-title";
+      // answerTitle.textContent = `${currentTime} - ${taskName}`;
+
+      // const answerContent = document.createElement("div");
+      // answerContent.className = "answer-content";
+      // answerContent.textContent = answer;
+
+      // answerTitle.onclick = function () {
+      //   answerContent.style.display = answerContent.style.display === "none" ? "block" : "none";
+      // };
+
+      // answerDiv.appendChild(answerTitle);
+      // answerDiv.appendChild(answerContent);
+      // answersContainer.appendChild(answerDiv);
+
+      // textarea.value = ""; // Clear textarea after saving
+      // alert("답안이 저장되었습니다. 제목을 클릭하여 답안을 보거나 숨길 수 있습니다.");
+    }
+
+
+    function startTimer(seconds, message, callback = null) {
       clearInterval(timerInterval);
       const messageDisplay = document.getElementById("message");
       messageDisplay.textContent = "";
@@ -173,24 +340,122 @@
           timeLeft--;
         } else {
           clearInterval(timerInterval);
-          messageDisplay.textContent = message;
+          endTimer(message, callback);
         }
       }
 
       updateTimer();
       timerInterval = setInterval(updateTimer, 1000);
       timerRunning = true;
+      updateButtonVisibility();
     }
+
+    function endTimer(message, callback) {
+      document.getElementById("message").textContent = message;
+      if (callback) callback();
+      timerRunning = false;
+      updateButtonVisibility();
+      displayNextTime();
+    }
+
+    function speakText(text, callback) {
+      const synth = window.speechSynthesis;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.onend = () => {
+        if (callback) callback();
+      };
+      synth.speak(utterance);
+    }
+
+    function playBeep(callback) {
+      if (isMobile) {
+        if (callback) callback();
+        return;
+      }
+      updateButtonVisibility();
+
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+      oscillator.connect(audioContext.destination);
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.5);
+
+      oscillator.onended = () => {
+        updateButtonVisibility();
+        if (callback) callback();
+      };
+    }
+
+    function startRecording() {
+      if (!recordingSupported) return;
+      if (!microphoneStream || !mediaRecorder) {
+        alert("Microphone is not initialized or unsupported.");
+        return;
+      }
+      audioChunks = [];
+      mediaRecorder.start();
+      recordingStarted = true;
+      console.log("Recording started.");
+    }
+
+    function saveRecording(audioURL) {
+      if (!recordingSupported) return;
+      const recordingsList = document.getElementById("recordingsList");
+      const recordingTime = new Date().toLocaleTimeString();
+      const fileName = `recording-${recordingTime.replace(/:/g, '-')}.webm`;
+
+      const recordingItem = document.createElement("div");
+      recordingItem.innerHTML = `
+        <p><strong>Recorded at:</strong> ${recordingTime}</p>
+        <audio controls src="${audioURL}" preload="metadata"></audio><br/>
+        <a href="${audioURL}" download="${fileName}">Download</a>
+      `;
+      if (recordingsList.firstChild) {
+        recordingsList.insertBefore(recordingItem, recordingsList.firstChild);
+      } else {
+        recordingsList.appendChild(recordingItem);
+      }
+    }
+
+    function stopRecording() {
+      if (!recordingSupported) return;
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        recordingStarted = false;
+        console.log("Recording stopped.");
+      }
+    }
+
 
     function displayNextTime() {
       const taskSelection = document.getElementById("taskSelection").value;
-      const [prepTime] = taskSelection.split('_');
-      const mins = Math.floor(parseInt(prepTime) / 60);
-      const secs = parseInt(prepTime) % 60;
-      document.getElementById("timer").textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+      const [prepTime, speakingTime] = taskSelection.split('_');
+
+      if (taskSelection.includes("Reading") || taskSelection.includes("Writing")) {
+        const mins = Math.floor(parseInt(prepTime) / 60);
+        const secs = parseInt(prepTime) % 60;
+        document.getElementById("timer").textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+      } else {
+        const mins = Math.floor(parseInt(prepTime) / 60);
+        const secs = parseInt(prepTime) % 60;
+        document.getElementById("timer").textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+      }
     }
 
-    window.onload = displayNextTime;
+    function updateButtonVisibility() {
+      const startBtn = document.getElementById("startBtn");
+      const resetBtn = document.getElementById("resetBtn");
+
+      if (timerRunning || speechProgress || recordingStarted) {
+        startBtn.style.display = "none";
+        resetBtn.style.display = "inline-block";
+      } else {
+        startBtn.style.display = "inline-block";
+        resetBtn.style.display = "none";
+      }
+    }
   </script>
 </body>
 </html>
