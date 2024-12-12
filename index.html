@@ -6,13 +6,10 @@
   <meta name="author" content="ladianchad" />
   <meta property="og:title" content="TOEFL Timer" />
   <meta property="og:description" content="TOEFL 시험 준비를 위한 강력한 도구! 말하기 타이머, 읽기 타이머 및 녹음 기능 포함." />
-  <!-- <meta property="og:image" content="https://example.com/toefl-timer-preview.png" /> -->
-  <!-- <meta property="og:url" content="https://example.com/toefl-timer" /> -->
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="TOEFL Timer" />
   <meta name="twitter:description" content="TOEFL 시험 준비를 도와주는 타이머 도구입니다. 말하기 및 읽기 연습을 간편하게 관리하세요." />
-  <!-- <meta name="twitter:image" content="https://example.com/toefl-timer-preview.png" /> -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>TOEFL Timer</title>
   <style>
@@ -68,38 +65,28 @@
       margin-top: 20px;
     }
 
-    .recordings {
-      margin-top: 20px;
-      text-align: left;
-      max-width: 500px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .recordings h2 {
-      text-align: center;
-    }
-    audio {
-      margin: 5px 0;
-      width: 100%;
-    }
-
-    #spinner {
+    .writing-section {
       display: none;
-      position: absolute;
-      left: 50%;
-      top: 90%;
-      transform: translateX(-50%);
-      width: 40px;
-      height: 40px;
-      border: 4px solid #ccc;
-      border-top: 4px solid #333;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
+      margin-top: 30px;
+      text-align: left;
+      margin-left: 10em;
+      margin-right: 10em;
     }
 
-    @keyframes spin {
-      0% { transform: translateX(-50%) rotate(0deg); }
-      100% { transform: translateX(-50%) rotate(360deg); }
+    .writing-section textarea {
+      width: 100%;
+      height: 300px;
+      border: 2px dashed #E0E0E0;
+      border-radius: 5px;
+      padding: 10px;
+      font-size: 1.25em;
+      color: #666;
+      line-height: 1.5;
+      resize: none;
+      outline: none;
+    }
+    .writing-section h2 {
+      text-align: center;
     }
 
     footer {
@@ -117,23 +104,21 @@
   <select id="taskSelection" onchange="selectionChanged()">
     <option value="15_45">말하기 유형 1 (준비 15 초, 말하기 45 초)</option>
     <option value="30_60">말하기 유형 2 (준비 30 초, 말하기 60 초)</option>
-    <option value="1200_Writing Section">쓰기 유형 1 (준비 30 초, 쓰기 20 분)</option>
-    <option value="600_Writing Section">쓰기 유형 2 (쓰기 10 분)</option>
-    <option value="2160_Reading Section">읽기 (36 분)</option>
+    <option value="1200_Writing">쓰기 유형 1 (쓰기 20 분)</option>
+    <option value="600_Writing">쓰기 유형 2 (쓰기 10 분)</option>
+    <option value="2160_Reading">읽기 (36 분)</option>
   </select>
 
-  <div id="timer" class="timer">00:15
-    <div id="spinner"></div>
-  </div>
+  <div id="timer" class="timer">00:15</div>
 
   <button id="startBtn" class="btn-start" onclick="startSelectedTimer()">시작</button>
   <button id="resetBtn" class="btn-reset" onclick="resetTimer()" style="display:none;">중지(초기화)</button>
 
   <div id="message" class="message"></div>
 
-  <div class="recordings" id="recordingsContainer">
-    <h2>녹음결과</h2>
-    <div id="recordingsList"></div>
+  <div class="writing-section" id="writingSection">
+    <h2>Writing 답안 적는 곳 (문법 검사 제거됨.)</h2>
+    <textarea spellcheck="false"></textarea>
   </div>
 
   <footer>
@@ -142,73 +127,38 @@
 
   <script>
     let timerInterval;
-    let mediaRecorder;
-    let audioChunks = [];
-    let microphoneStream = null;
     let timerRunning = false;
-    let speechProgress = false;
-    let recordingStarted = false;
-
-    // 모바일 환경 체크: 모바일이면 녹음 비활성화
-    const isMobile = /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Silk|Opera Mini|Tablet/.test(navigator.userAgent);
-    let recordingSupported = !isMobile; // 모바일이면 녹음 지원 false
-
-    async function initializeMicrophone() {
-      if (!recordingSupported) {
-        // 모바일 환경이면 녹음 관련 UI 숨김
-        const recordingsContainer = document.getElementById("recordingsContainer");
-        if (recordingsContainer) {
-          recordingsContainer.style.display = "none";
-        }
-      } else {
-        // 녹음 가능 환경일 경우 마이크 초기화
-        try {
-          microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          console.log("Microphone initialized and ready to use.");
-
-          mediaRecorder = new MediaRecorder(microphoneStream);
-          mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) {
-              audioChunks.push(event.data);
-            }
-          };
-          mediaRecorder.onstop = () => {
-            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-            const audioURL = URL.createObjectURL(audioBlob);
-            saveRecording(audioURL);
-            audioChunks = [];
-            recordingStarted = false;
-          };
-        } catch (error) {
-          console.error("Microphone access denied.", error);
-          alert("Please allow microphone access to use this application.");
-        }
-      }
-
-      displayNextTime();
-    }
-
-    window.onload = initializeMicrophone;
 
     function selectionChanged() {
       resetTimer();
+      const taskSelection = document.getElementById("taskSelection").value;
+      const writingSection = document.getElementById("writingSection");
+
+      // 쓰기 유형 선택 시 Writing Section 표시
+      if (taskSelection.includes("Writing")) {
+        writingSection.style.display = "block";
+      } else {
+        writingSection.style.display = "none";
+      }
     }
 
     function resetTimer() {
       clearInterval(timerInterval);
       document.getElementById("message").textContent = "";
-      if (recordingSupported && mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
-        console.log("Recording stopped during reset.");
-      }
       timerRunning = false;
-      speechProgress = false;
-      recordingStarted = false;
-      updateButtonVisibility();
       displayNextTime();
     }
 
-    function startTimer(seconds, message, callback = null) {
+    function startSelectedTimer() {
+      const taskSelection = document.getElementById("taskSelection").value;
+      const [prepTime, type] = taskSelection.split('_');
+
+      resetTimer();
+
+      startTimer(parseInt(prepTime), `${type} Time Ended!`);
+    }
+
+    function startTimer(seconds, message) {
       clearInterval(timerInterval);
       const messageDisplay = document.getElementById("message");
       messageDisplay.textContent = "";
@@ -223,151 +173,24 @@
           timeLeft--;
         } else {
           clearInterval(timerInterval);
-          endTimer(message, callback);
+          messageDisplay.textContent = message;
         }
       }
 
       updateTimer();
       timerInterval = setInterval(updateTimer, 1000);
       timerRunning = true;
-      updateButtonVisibility();
-    }
-
-    function endTimer(message, callback) {
-      document.getElementById("message").textContent = message;
-      if (callback) callback();
-      timerRunning = false;
-      updateButtonVisibility();
-      displayNextTime();
-    }
-
-    function speakText(text, callback) {
-      const synth = window.speechSynthesis;
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.onend = () => {
-        if (callback) callback();
-      };
-      synth.speak(utterance);
-    }
-
-    function playBeep(callback) {
-      if (isMobile) {
-        if (callback) callback();
-        return;
-      }
-      updateButtonVisibility();
-
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const oscillator = audioContext.createOscillator();
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
-      oscillator.connect(audioContext.destination);
-      oscillator.start();
-      oscillator.stop(audioContext.currentTime + 0.5);
-
-      oscillator.onended = () => {
-        updateButtonVisibility();
-        if (callback) callback();
-      };
-    }
-
-    function startRecording() {
-      if (!recordingSupported) return;
-      if (!microphoneStream || !mediaRecorder) {
-        alert("Microphone is not initialized or unsupported.");
-        return;
-      }
-      audioChunks = [];
-      mediaRecorder.start();
-      recordingStarted = true;
-      console.log("Recording started.");
-    }
-
-    function saveRecording(audioURL) {
-      if (!recordingSupported) return;
-      const recordingsList = document.getElementById("recordingsList");
-      const recordingTime = new Date().toLocaleTimeString();
-      const fileName = `recording-${recordingTime.replace(/:/g, '-')}.webm`;
-
-      const recordingItem = document.createElement("div");
-      recordingItem.innerHTML = `
-        <p><strong>Recorded at:</strong> ${recordingTime}</p>
-        <audio controls src="${audioURL}" preload="metadata"></audio><br/>
-        <a href="${audioURL}" download="${fileName}">Download</a>
-      `;
-      if (recordingsList.firstChild) {
-        recordingsList.insertBefore(recordingItem, recordingsList.firstChild);
-      } else {
-        recordingsList.appendChild(recordingItem);
-      }
-    }
-
-    function stopRecording() {
-      if (!recordingSupported) return;
-      if (mediaRecorder && mediaRecorder.state === "recording") {
-        mediaRecorder.stop();
-        recordingStarted = false;
-        console.log("Recording stopped.");
-      }
-    }
-
-    function startSelectedTimer() {
-      const taskSelection = document.getElementById("taskSelection").value;
-      const [prepTime, speakingTime] = taskSelection.split('_');
-
-      resetTimer();
-
-      if (taskSelection.includes("Writing") || taskSelection.includes("Reading")) {
-        startTimer(parseInt(prepTime), taskSelection + " Time Ended!");
-        return;
-      }
-
-      speechProgress = true;
-
-      startTimer(
-        parseInt(prepTime),
-        "준비시간이 끝났습니다!",
-        () => {
-          speakText("Speaking after beep...", () => {
-            playBeep(() => {
-              speechProgress = false;xw
-              if (recordingSupported) startRecording();
-              startTimer(parseInt(speakingTime), "Speaking Time Ended!", () => {
-                if (recordingSupported) stopRecording();
-              });
-            });
-          });
-        }
-      );
     }
 
     function displayNextTime() {
       const taskSelection = document.getElementById("taskSelection").value;
-      const [prepTime, speakingTime] = taskSelection.split('_');
-
-      if (taskSelection.includes("Reading")) {
-        const mins = Math.floor(parseInt(prepTime) / 60);
-        const secs = parseInt(prepTime) % 60;
-        document.getElementById("timer").textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
-      } else {
-        const mins = Math.floor(parseInt(prepTime) / 60);
-        const secs = parseInt(prepTime) % 60;
-        document.getElementById("timer").textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
-      }
+      const [prepTime] = taskSelection.split('_');
+      const mins = Math.floor(parseInt(prepTime) / 60);
+      const secs = parseInt(prepTime) % 60;
+      document.getElementById("timer").textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
     }
 
-    function updateButtonVisibility() {
-      const startBtn = document.getElementById("startBtn");
-      const resetBtn = document.getElementById("resetBtn");
-
-      if (timerRunning || speechProgress || recordingStarted) {
-        startBtn.style.display = "none";
-        resetBtn.style.display = "inline-block";
-      } else {
-        startBtn.style.display = "inline-block";
-        resetBtn.style.display = "none";
-      }
-    }
+    window.onload = displayNextTime;
   </script>
 </body>
 </html>
