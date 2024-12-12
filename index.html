@@ -317,7 +317,7 @@
 
       resetTimer();
 
-      if (!taskSelection.includes("Speaking")) {
+      if (taskSelection.includes("Writing") || taskSelection.includes("Reading")) {
         startTimer(parseInt(prepTime), taskSelection + " Time Ended!");
         return;
       }
