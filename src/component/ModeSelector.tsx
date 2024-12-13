@@ -12,7 +12,7 @@ const ModeSelector = ({
     const modes = useMemo(() => {
         return DefaultModes.map((item, index) => {
             return (
-                <option className="focus:outline-none focus:bg-white focus:border-none bg-white" value={index}
+                <option className="focus:outline-none focus:bg-white focus:border-none bg-white w-full h-full" value={index}
                         key={index}>{item.name}</option>
             )
         })
@@ -25,7 +25,7 @@ const ModeSelector = ({
             <label className="px-2 py-1 rounded border-2 w-full focus-within:border-2 focus-within:border-blue-600">
                 <select
                     id="modeSelection"
-                    className="focus:outline-none focus:border-none w-full text-center"
+                    className="focus:outline-none focus:border-none w-full h-full text-center"
                     onChange={(item) => {
                         if (onModeChange) {
                             const mode = DefaultModes[item.currentTarget.value];
