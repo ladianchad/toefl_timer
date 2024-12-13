@@ -21,7 +21,6 @@ const Timer = ({
                    smallClock
                }: TimerProps) => {
     const [remain, setRemain] = useState(timeConfig.prepareTime ? timeConfig.prepareTime : timeConfig.runTime);
-    const [comment, setComment] = useState(comments);
     const [startPoint, setStartPoint] = useState(timeConfig.prepareTime ? -1 : 1);
     const [currentState, setCurrentState] = useState(timeConfig.prepareTime ? -1 : 1);
     const [timer, setTimer] = useState<number>(null);
@@ -34,10 +33,6 @@ const Timer = ({
         setCurrentState(update);
         resetCounter(timeConfig);
     }, [timeConfig]);
-
-    useEffect(() => {
-        setComment(comments);
-    }, [comments]);
 
     useEffect(() => {
         if(currentState > 3 && reset){
@@ -123,17 +118,17 @@ const Timer = ({
 
     const displayComment = useMemo(() => {
         if (currentState == -1) {
-            return comment?.beforeStart
+            return comments?.beforeStart
         } else if (currentState == 0) {
-            return comment?.start
+            return comments?.start
         } else if (currentState == 1) {
-            return comment?.beforeMiddle
+            return comments?.beforeMiddle
         } else if (currentState == 2) {
-            return comment?.middle
+            return comments?.middle
         } else if (currentState == 3) {
-            return comment?.end
+            return comments?.end
         }
-        return comment?.end
+        return comments?.end
     }, [currentState, comments])
 
     return (
