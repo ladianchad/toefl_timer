@@ -134,7 +134,7 @@ const Timer = ({
             return comment?.end
         }
         return comment?.end
-    }, [currentState])
+    }, [currentState, comments])
 
     return (
         <div
