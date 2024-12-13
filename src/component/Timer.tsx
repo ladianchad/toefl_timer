@@ -153,7 +153,7 @@ const Timer = ({
                 <span
                     className={"grow h-full flex items-end text-lg justify-start font-bold text-gray-400"}>{displayComment}</span>
                 <label
-                    className={"rounded-md font-bold w-fit text-white px-6 py-2 " + (currentState != startPoint ? "bg-red-600" : "bg-green-600")}
+                    className={"rounded-md font-bold w-fit h-fit text-white px-6 py-2 " + (currentState != startPoint ? "bg-red-600" : "bg-green-600")}
                 >
                 <span className="break-keep">{
                     currentState == startPoint ? "시작" : "초기화"
