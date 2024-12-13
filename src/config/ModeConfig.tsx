@@ -67,8 +67,7 @@ export const DefaultModes: Mode[] = [
         },
         contents: <WritingArea></WritingArea>,
         comment: {
-            beforeStart: "Writing 문제를 준비하세요.",
-            beforeMiddle: "Writing 준비 시간.",
+            beforeMiddle: "Writing 문제를 준비하세요.",
             end: "수고하셨습니다."
         },
         smallClock: true
@@ -90,13 +89,12 @@ export const DefaultModes: Mode[] = [
         },
         contents: <WritingArea></WritingArea>,
         comment: {
-            beforeStart: "Writing 문제를 준비하세요.",
-            beforeMiddle: "Writing 준비 시간.",
+            beforeMiddle: "Writing 문제를 준비하세요.",
             end: "수고하셨습니다."
         },
         smallClock: true
     }, {
-        name: "읽기 (36 분)",
+        name: "읽기 시험 (36 분)",
         option: {
             prepareTime: 0,
             runTime: 2160
@@ -108,8 +106,23 @@ export const DefaultModes: Mode[] = [
             }
         },
         comment: {
-            beforeStart: "Reading 문제를 준비하세요.",
-            beforeMiddle: "Reading 준비 시간.",
+            beforeMiddle: "Reading 문제를 준비하세요.",
+            end: "수고하셨습니다."
+        }
+    }, {
+        name: "읽기 1문제 (18 분)",
+        option: {
+            prepareTime: 0,
+            runTime: 1080
+        },
+        action: {
+            async end() {
+                speech("Time is over.");
+                await sleep(2000);
+            }
+        },
+        comment: {
+            beforeMiddle: "Reading 문제를 준비하세요.",
             end: "수고하셨습니다."
         }
     }
