@@ -1,9 +1,6 @@
 import sleep from "./sleep";
 
-const buzzer = async (duration: number = 1000, frequency : number = 440) => {
-    // AudioContext 생성
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
+const buzzer = async (audioCtx : any, duration: number = 1000, frequency : number = 440) => {
     // 오실레이터 노드 생성
     const oscillator = audioCtx.createOscillator();
 
@@ -20,6 +17,10 @@ const buzzer = async (duration: number = 1000, frequency : number = 440) => {
     await sleep(duration);
     oscillator.stop();
     audioCtx.close();
+}
+
+export const setUpBuzzer = () => {
+    return new (window.AudioContext || window.webkitAudioContext)();
 }
 
 export default buzzer

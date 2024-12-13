@@ -12,10 +12,10 @@ export const DefaultModes: Mode[] = [
             runTime: 45
         },
         action: {
-            async beforeMiddle() {
+            async beforeMiddle(audioContext) {
                 speech("Speaking after beep...");
                 await sleep(2000);
-                await buzzer(1000)
+                await buzzer(audioContext, 1000)
             },
             async end() {
                 speech("Time is over.");
@@ -34,10 +34,10 @@ export const DefaultModes: Mode[] = [
             runTime: 60
         },
         action: {
-            async beforeMiddle() {
+            async beforeMiddle(audioContext) {
                 speech("Speaking after beep...");
                 await sleep(2000);
-                await buzzer(1000)
+                await buzzer(audioContext, 1000)
             },
             async end() {
                 speech("Time is over.");
@@ -70,7 +70,8 @@ export const DefaultModes: Mode[] = [
             beforeStart: "Writing 문제를 준비하세요.",
             beforeMiddle: "Writing 준비 시간.",
             end: "수고하셨습니다."
-        }
+        },
+        smallClock: true
     }, {
         name: "쓰기 유형 2 (쓰기 10 분)",
         option: {
@@ -92,7 +93,8 @@ export const DefaultModes: Mode[] = [
             beforeStart: "Writing 문제를 준비하세요.",
             beforeMiddle: "Writing 준비 시간.",
             end: "수고하셨습니다."
-        }
+        },
+        smallClock: true
     }, {
         name: "읽기 (36 분)",
         option: {

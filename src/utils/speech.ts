@@ -9,4 +9,9 @@ const speech = (text: string) => {
     window.speechSynthesis.speak(utterance);
 }
 
+export const initSpeech = () => {
+    const utterance = new SpeechSynthesisUtterance('');
+    speechSynthesis.speak(utterance); // 빈 텍스트로 초기화
+}
+
 export default speech

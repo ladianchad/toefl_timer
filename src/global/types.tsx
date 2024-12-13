@@ -6,6 +6,7 @@ export interface Mode {
     action?: ModeAction
     comment?: ModeComment
     contents?: React.ReactNode
+    smallClock?: boolean
 }
 
 export interface TimeConfig {
@@ -14,11 +15,11 @@ export interface TimeConfig {
 }
 
 export interface ModeAction {
-    beforeStart?: () => Promise<void>
-    start?: () => Promise<void>
-    beforeMiddle?: () => Promise<void>
-    middle?: () => Promise<void>
-    end?: () => Promise<void>
+    beforeStart?: (buzzer?: any) => Promise<void>
+    start?: (buzzer?: any) => Promise<void>
+    beforeMiddle?: (buzzer?: any) => Promise<void>
+    middle?: (buzzer?: any) => Promise<void>
+    end?: (buzzer?: any) => Promise<void>
 }
 
 export interface ModeComment {

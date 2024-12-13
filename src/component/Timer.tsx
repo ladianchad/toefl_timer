@@ -1,24 +1,31 @@
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {ModeAction, ModeComment, TimeConfig} from "../global/types";
+import {initSpeech} from "../utils/speech";
+import {setUpBuzzer} from "../utils/buzzer";
 
 interface TimerProps {
     comments?: ModeComment,
-    action?: ModeAction & {
-        reset?: () => void,
-    }
+    action?: ModeAction,
+    onAir?: () => void,
+    reset?: () => void,
+    smallClock?: boolean,
     timeConfig: TimeConfig
 }
 
 const Timer = ({
                    timeConfig,
                    action,
-                   comments
+                   onAir,
+                   reset,
+                   comments,
+                   smallClock
                }: TimerProps) => {
     const [remain, setRemain] = useState(timeConfig.prepareTime ? timeConfig.prepareTime : timeConfig.runTime);
     const [comment, setComment] = useState(comments);
     const [startPoint, setStartPoint] = useState(timeConfig.prepareTime ? -1 : 1);
     const [currentState, setCurrentState] = useState(timeConfig.prepareTime ? -1 : 1);
-    const [timer, setTimer] = useState<number>(null)
+    const [timer, setTimer] = useState<number>(null);
+    const [buzzer, setBuzzer] = useState<any>();
 
     useEffect(() => {
         const update = timeConfig.prepareTime ? -1 : 1;
@@ -32,14 +39,17 @@ const Timer = ({
     }, [comments]);
 
     useEffect(() => {
+        if (startPoint != currentState && onAir) {
+            onAir();
+        }
         if (startPoint == -1 && currentState < 1) {
             return
-        } else if (startPoint == 1 && currentState < 3) {
+        } else if (startPoint == 1 && currentState < 2) {
             return;
         }
         if (currentState == 1) {
             if (action?.beforeMiddle) {
-                action.beforeMiddle().then(() => {
+                action.beforeMiddle(buzzer).then(() => {
                     setCurrentState(c => c + 1)
                 })
             } else {
@@ -47,7 +57,7 @@ const Timer = ({
             }
         } else if (currentState == 2) {
             if (action?.middle) {
-                action.middle().then(() => {
+                action.middle(buzzer).then(() => {
                     setRemain(timeConfig.runTime)
                     startCount()
                 })
@@ -57,7 +67,7 @@ const Timer = ({
             }
         } else if (currentState == 3) {
             if (action?.end) {
-                action.end().then(() => {
+                action.end(buzzer).then(() => {
                     setCurrentState(c => c + 1);
                 })
             }
@@ -91,8 +101,8 @@ const Timer = ({
         }
         setRemain(timeConfig.prepareTime ? timeConfig.prepareTime : timeConfig.runTime);
         setCurrentState(state);
-        if (action?.reset) {
-            action.reset();
+        if (reset) {
+            reset();
         }
     }, [timer]);
 
@@ -114,16 +124,18 @@ const Timer = ({
     return (
         <div
             className={"w-full flex flex-col gap-2 p-2" + (remain < 10 && currentState != startPoint ? " text-red-500" : "")}>
-            <h3 className="w-full text-center font-bold text-2xl">남은 시간</h3>
-            <div
-                className="flex items-center text-[5em] md:text-[8em] w-full text-center tracking-normal justify-center gap-2">
-                <span className="w-36 md:w-44">{Math.floor(remain / 60).toString().padStart(2, "0")}</span>
-                :
-                <span className="w-36 md:w-44">{Math.floor(remain % 60).toString().padStart(2, "0")}</span>
+            <div className={"w-full flex " + (smallClock ? " justify-between border-b" : " flex-col")}>
+                <h3 className={"w-full font-bold " + (smallClock ? " text-xl" : " text-2xl text-center")}>남은 시간</h3>
+                <div
+                    className={"flex items-center w-full text-center tracking-normal gap-3" + (smallClock ? " text-[2.5em] justify-end" : " text-[5em] md:text-[8em] justify-center")}>
+                    <span>{Math.floor(remain / 60).toString().padStart(2, "0")}</span>
+                    :
+                    <span>{Math.floor(remain % 60).toString().padStart(2, "0")}</span>
+                </div>
             </div>
 
             <div className="flex">
-                <span className="grow h-full flex items-end text-lg justify-start font-bold">{displayComment}</span>
+                <span className={"grow h-full flex items-end text-lg justify-start font-bold text-gray-400"}>{displayComment}</span>
                 <label
                     className={"rounded-md font-bold w-fit text-white px-6 py-2 " + (currentState != startPoint ? "bg-red-600" : "bg-green-600")}
                 >
@@ -131,19 +143,18 @@ const Timer = ({
                     currentState == startPoint ? "시작" : "초기화"
                 }</span>
                     <button onClick={() => {
+                        initSpeech();
+                        setBuzzer(setUpBuzzer());
                         if (currentState == startPoint) {
                             if (action?.beforeStart && startPoint == -1) {
-                                action.beforeStart().then(() => {
-                                    startCount();
+                                action.beforeStart(buzzer).then(() => {
                                     setCurrentState(startPoint + 1)
                                 });
                             } else if (action?.beforeMiddle && startPoint == 1) {
-                                action.beforeMiddle().then(() => {
-                                    startCount();
+                                action.beforeMiddle(buzzer).then(() => {
                                     setCurrentState(startPoint + 1)
                                 })
                             } else {
-                                startCount();
                                 setCurrentState(startPoint + 1)
                             }
                         } else {

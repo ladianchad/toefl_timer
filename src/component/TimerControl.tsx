@@ -30,22 +30,22 @@ const TimerMenu = ({
     return (
         <div className="flex gap-2">
             <span className="grow font-bold text-blue-500">{title}</span>
-            <div
-                className="flex items-center justify-center gap-2"
-                onClick={() => {
-                    if(disabled){
-                        alert("타이머가 작동 중엔 시간을 수정 할 수 없습니다.");
-                    }
-                }}
-            >
+            <div className="flex items-center justify-center gap-2">
                 <label className="border rounded-md px-2 py-1 focus-within:border-blue-500 focus-within:border-2">
                     <input
-                        disabled={disabled ? disabled : false}
+                        readOnly={disabled ? disabled : false}
                         type="number"
                         className="text-center w-full focus:outline-none focus:border-none h-full disabled:bg-white"
                         min={0}
                         max={36000}
                         value={value}
+                        onClick={(event) => {
+                            if(disabled){
+                                event.preventDefault()
+                                event.currentTarget.blur()
+                                alert("타이머가 작동 중엔 시간을 수정 할 수 없습니다.");
+                            }
+                        }}
                         onChange={(event) => {
                             const newValue = parseInt(event.currentTarget.value);
                             if (newValue != value) {
