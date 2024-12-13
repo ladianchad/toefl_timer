@@ -149,7 +149,7 @@ const Timer = ({
                 </div>
             </div>
 
-            <div className="flex">
+            <div className="flex break-keep">
                 <span
                     className={"grow h-full flex items-end text-lg justify-start font-bold text-gray-400"}>{displayComment}</span>
                 <label
