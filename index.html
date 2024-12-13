@@ -15,9 +15,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="google-site-verification" content="iKDmeOoZm4IBYUPlrn9A8S_Mqves11sB4MMy6wznmp4" />
   <title>토플 타이머</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/favicon.ico" />
+  <!-- Apple Touch Icon -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/icon/apple-touch-icon.png" />
+  <!-- PNG Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+
 </head>
 <body class="w-dvw h-dvh">
-  <div id="root" class="w-full h-full min-w-[300px] flex flex-col"></div>
+  <div id="root" class="w-full h-full min-w-[300px] flex flex-col overflow-y-auto relative"></div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>

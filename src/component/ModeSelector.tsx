@@ -25,7 +25,7 @@ const ModeSelector = ({
             <label className="px-2 py-1 rounded border-2 w-full focus-within:border-2 focus-within:border-blue-600">
                 <select
                     id="modeSelection"
-                    className="focus:outline-none focus:border-none w-full h-full text-center"
+                    className="focus:outline-none focus:border-none w-full h-full text-center appearance-none"
                     onChange={(item) => {
                         if (onModeChange) {
                             const mode = DefaultModes[item.currentTarget.value];
