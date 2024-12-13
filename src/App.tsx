@@ -13,7 +13,7 @@ const App = () => {
     return (
         <>
             <h1 className="text-2xl font-bold text-center pb-2.5 bg-blue-950 text-white p-3">TOEFL UTILS</h1>
-            <div className="w-full h-full p-4 font-sans flex flex-col gap-2">
+            <div className="w-full grow p-4 font-sans flex flex-col gap-2">
                 <div className="flex flex-col gap-2 grow">
                     <ModeSelector onModeChange={(newMode) => {
                         setIsRunning(false)
