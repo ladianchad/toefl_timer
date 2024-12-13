@@ -1,13 +1,14 @@
 import sleep from "./sleep";
 
-const buzzer = async (audioCtx : any, duration: number = 1000, frequency : number = 440) => {
-    // 오실레이터 노드 생성
+const buzzer = async (audioCtx: any, duration: number = 1000, frequency: number = 440) => {
+    if (!audioCtx) {
+        return;
+    }
     const oscillator = audioCtx.createOscillator();
 
     // 오실레이터 설정
     oscillator.type = 'sine'; // 사인파 (삐 소리)
     oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime); // 주파수 설정 (Hz)
-
     // 출력 연결
     oscillator.connect(audioCtx.destination);
 
@@ -20,7 +21,12 @@ const buzzer = async (audioCtx : any, duration: number = 1000, frequency : numbe
 }
 
 export const setUpBuzzer = () => {
-    return new (window.AudioContext || window.webkitAudioContext)();
+    if ("AudioContext" in window) {
+        return new window.AudioContext();
+    } else if("webkitAudioContext" in window) {
+        return new window.webkitAudioContext();
+    }
+    return null;
 }
 
 export default buzzer

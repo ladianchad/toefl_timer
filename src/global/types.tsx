@@ -15,11 +15,11 @@ export interface TimeConfig {
 }
 
 export interface ModeAction {
-    beforeStart?: (buzzer?: any) => Promise<void>
-    start?: (buzzer?: any) => Promise<void>
-    beforeMiddle?: (buzzer?: any) => Promise<void>
-    middle?: (buzzer?: any) => Promise<void>
-    end?: (buzzer?: any) => Promise<void>
+    beforeStart?: (buzzer?: unknown, utterance?: SpeechSynthesisUtterance) => Promise<void>
+    start?: (buzzer?: unknown, utterance?: SpeechSynthesisUtterance) => Promise<void>
+    beforeMiddle?: (buzzer?: unknown, utterance?: SpeechSynthesisUtterance) => Promise<void>
+    middle?: (buzzer?: unknown, utterance?: SpeechSynthesisUtterance) => Promise<void>
+    end?: (buzzer?: unknown, utterance?: SpeechSynthesisUtterance) => Promise<void>
 }
 
 export interface ModeComment {

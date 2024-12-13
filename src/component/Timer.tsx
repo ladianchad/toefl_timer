@@ -26,6 +26,7 @@ const Timer = ({
     const [currentState, setCurrentState] = useState(timeConfig.prepareTime ? -1 : 1);
     const [timer, setTimer] = useState<number>(null);
     const [buzzer, setBuzzer] = useState<any>();
+    const [utterance, setUtterance] = useState<any>();
 
     useEffect(() => {
         const update = timeConfig.prepareTime ? -1 : 1;
@@ -39,17 +40,31 @@ const Timer = ({
     }, [comments]);
 
     useEffect(() => {
-        if (startPoint != currentState && onAir) {
+        if(currentState > 3 && reset){
+            reset();
+            return;
+        } else if (startPoint != currentState && onAir) {
             onAir();
         }
-        if (startPoint == -1 && currentState < 1) {
+        if (startPoint == -1 && currentState < 0) {
             return
         } else if (startPoint == 1 && currentState < 2) {
             return;
         }
-        if (currentState == 1) {
+        if(currentState == 0){
+            if (action?.start) {
+                action.start(buzzer, utterance).then(() => {
+                    setRemain(timeConfig.prepareTime)
+                    startCount()
+                })
+            } else {
+                setRemain(timeConfig.prepareTime)
+                startCount()
+            }
+        } else if (currentState == 1) {
+            setRemain(timeConfig.runTime)
             if (action?.beforeMiddle) {
-                action.beforeMiddle(buzzer).then(() => {
+                action.beforeMiddle(buzzer, utterance).then(() => {
                     setCurrentState(c => c + 1)
                 })
             } else {
@@ -57,19 +72,19 @@ const Timer = ({
             }
         } else if (currentState == 2) {
             if (action?.middle) {
-                action.middle(buzzer).then(() => {
-                    setRemain(timeConfig.runTime)
+                action.middle(buzzer, utterance).then(() => {
                     startCount()
                 })
             } else {
-                setRemain(timeConfig.runTime)
                 startCount()
             }
         } else if (currentState == 3) {
             if (action?.end) {
-                action.end(buzzer).then(() => {
+                action.end(buzzer, utterance).then(() => {
                     setCurrentState(c => c + 1);
                 })
+            } else {
+                setCurrentState(c => c + 1);
             }
         }
     }, [currentState]);
@@ -125,7 +140,7 @@ const Timer = ({
         <div
             className={"w-full flex flex-col gap-2 p-2" + (remain < 10 && currentState != startPoint ? " text-red-500" : "")}>
             <div className={"w-full flex " + (smallClock ? " justify-between border-b" : " flex-col")}>
-                <h3 className={"w-full font-bold " + (smallClock ? " text-xl" : " text-2xl text-center")}>남은 시간</h3>
+                <h3 className={"w-full font-bold " + (smallClock ? " text-xl" : " text-2xl text-center")}>{currentState < 1 ? "남은 준비 시간" : "남은 진행 시간"}</h3>
                 <div
                     className={"flex items-center w-full text-center tracking-normal gap-3" + (smallClock ? " text-[2.5em] justify-end" : " text-[5em] md:text-[8em] justify-center")}>
                     <span>{Math.floor(remain / 60).toString().padStart(2, "0")}</span>
@@ -135,7 +150,8 @@ const Timer = ({
             </div>
 
             <div className="flex">
-                <span className={"grow h-full flex items-end text-lg justify-start font-bold text-gray-400"}>{displayComment}</span>
+                <span
+                    className={"grow h-full flex items-end text-lg justify-start font-bold text-gray-400"}>{displayComment}</span>
                 <label
                     className={"rounded-md font-bold w-fit text-white px-6 py-2 " + (currentState != startPoint ? "bg-red-600" : "bg-green-600")}
                 >
@@ -143,15 +159,20 @@ const Timer = ({
                     currentState == startPoint ? "시작" : "초기화"
                 }</span>
                     <button onClick={() => {
-                        initSpeech();
-                        setBuzzer(setUpBuzzer());
+                        let newUtterance = initSpeech();
+                        let newBuzzer = setUpBuzzer();
+                        setUtterance(newUtterance);
+                        setBuzzer(newBuzzer);
+                        if (!newUtterance || !newBuzzer) {
+                            alert("해당 브라우저는 음향 생성이 불가능합니다.")
+                        }
                         if (currentState == startPoint) {
                             if (action?.beforeStart && startPoint == -1) {
-                                action.beforeStart(buzzer).then(() => {
+                                action.beforeStart(buzzer, utterance).then(() => {
                                     setCurrentState(startPoint + 1)
                                 });
                             } else if (action?.beforeMiddle && startPoint == 1) {
-                                action.beforeMiddle(buzzer).then(() => {
+                                action.beforeMiddle(buzzer, utterance).then(() => {
                                     setCurrentState(startPoint + 1)
                                 })
                             } else {
@@ -159,6 +180,8 @@ const Timer = ({
                             }
                         } else {
                             resetCounter(timeConfig);
+                            setBuzzer(null);
+                            setUtterance(null);
                         }
                     }}/>
                 </label>

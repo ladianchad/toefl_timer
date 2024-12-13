@@ -4,6 +4,7 @@ import sleep from "../utils/sleep";
 import buzzer from "../utils/buzzer";
 import React from "react";
 import WritingArea from "../component/WritingArea";
+
 export const DefaultModes: Mode[] = [
     {
         name: "말하기 유형 1 (준비 15 초, 말하기 45 초)",
@@ -12,14 +13,14 @@ export const DefaultModes: Mode[] = [
             runTime: 45
         },
         action: {
-            async beforeMiddle(audioContext) {
-                speech("Speaking after beep...");
+            async beforeMiddle(audioContext, utterance) {
+                speech(utterance, "Speaking after beep...");
                 await sleep(2000);
                 await buzzer(audioContext, 1000)
             },
-            async end() {
-                speech("Time is over.");
-                await sleep(2000);
+            async end(audioContext, utterance) {
+                speech(utterance, "Time is over.");
+                await sleep(1000);
             }
         },
         comment: {
@@ -34,14 +35,14 @@ export const DefaultModes: Mode[] = [
             runTime: 60
         },
         action: {
-            async beforeMiddle(audioContext) {
-                speech("Speaking after beep...");
+            async beforeMiddle(audioContext, utterance) {
+                speech(utterance, "Speaking after beep...");
                 await sleep(2000);
                 await buzzer(audioContext, 1000)
             },
-            async end() {
-                speech("Time is over.");
-                await sleep(2000);
+            async end(audioContext, utterance) {
+                speech(utterance, "Time is over.");
+                await sleep(1000);
             }
         },
         comment: {
@@ -60,9 +61,9 @@ export const DefaultModes: Mode[] = [
                 const writable = document.getElementById("writingSection")
                 writable?.focus()
             },
-            async end() {
-                speech("Time is over.");
-                await sleep(2000);
+            async end(audioContext, utterance) {
+                speech(utterance, "Time is over.");
+                await sleep(1000);
             }
         },
         contents: <WritingArea></WritingArea>,
@@ -82,9 +83,9 @@ export const DefaultModes: Mode[] = [
                 const writable = document.getElementById("writingSection")
                 writable?.focus()
             },
-            async end() {
-                speech("Time is over.");
-                await sleep(2000);
+            async end(audioContext, utterance) {
+                speech(utterance, "Time is over.");
+                await sleep(1000);
             }
         },
         contents: <WritingArea></WritingArea>,
@@ -100,9 +101,9 @@ export const DefaultModes: Mode[] = [
             runTime: 2160
         },
         action: {
-            async end() {
-                speech("Time is over.");
-                await sleep(2000);
+            async end(audioContext, utterance) {
+                speech(utterance, "Time is over.");
+                await sleep(1000);
             }
         },
         comment: {
@@ -116,9 +117,9 @@ export const DefaultModes: Mode[] = [
             runTime: 1080
         },
         action: {
-            async end() {
-                speech("Time is over.");
-                await sleep(2000);
+            async end(audioContext, utterance) {
+                speech(utterance, "Time is over.");
+                await sleep(1000);
             }
         },
         comment: {

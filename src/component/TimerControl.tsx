@@ -47,11 +47,13 @@ const TimerMenu = ({
                             }
                         }}
                         onChange={(event) => {
-                            const newValue = parseInt(event.currentTarget.value);
+                            const current = event.currentTarget.value;
+                            const newValue = current ? parseInt(current) : 0;
                             if (newValue != value) {
                                 setValue(newValue);
                                 onChange(newValue);
                             }
+                            event.currentTarget.value = newValue.toString()
                         }}
                     />
                 </label>
