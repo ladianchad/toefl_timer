@@ -11,7 +11,11 @@ const ModeSelector = ({
                       }: ModeSelectorProps) => {
     const modes = useMemo(() => {
         return DefaultModes.map((item, index) => {
-            return <option value={index} key={index}>{item.name}</option>
+            return (
+                <label>
+                    <option className="focus:outline-none focus:bg-white focus:border-none" value={index} key={index}>{item.name}</option>
+                </label>
+            )
         })
     }, []);
 
