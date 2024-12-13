@@ -149,13 +149,13 @@ const Timer = ({
                 </div>
             </div>
 
-            <div className="flex break-keep">
+            <div className="flex">
                 <span
                     className={"grow h-full flex items-end text-lg justify-start font-bold text-gray-400"}>{displayComment}</span>
                 <label
                     className={"rounded-md font-bold w-fit text-white px-6 py-2 " + (currentState != startPoint ? "bg-red-600" : "bg-green-600")}
                 >
-                <span>{
+                <span className="break-keep">{
                     currentState == startPoint ? "시작" : "초기화"
                 }</span>
                     <button onClick={() => {
