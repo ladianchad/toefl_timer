@@ -1,9 +1,9 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {ModeAction, ModeActionType, ModeActionContext, ModeComment, TimeConfig} from "../global/types";
+import {ModeAction, ModeActionContext, ModeComment, TimeConfig} from "../global/types";
 import {initSpeech} from "../utils/speech";
 import {setUpBuzzer} from "../utils/buzzer";
 import {initialSpeechRecognition} from "../utils/speechRecognition";
-import {initializeMediaStream, initialMicrophone} from "../utils/record";
+import {getMediaStream, getMicrophone} from "../utils/record";
 
 interface TimerProps {
     comments?: ModeComment,
@@ -27,12 +27,10 @@ const Timer = ({
     const [currentState, setCurrentState] = useState(timeConfig.prepareTime ? -1 : 1);
     const [timer, setTimer] = useState<number>(null);
     const [context, setContext] = useState<ModeActionContext>({});
-    const [voiceStream, setVoiceStream] = useState<MediaStream>()
     const buttonRef = useRef<HTMLButtonElement>(null)
 
     useEffect(() => {
-        initializeMediaStream().then(stream => {
-            setVoiceStream(stream)
+        getMediaStream().then(() => {
         })
     }, []);
 
@@ -125,7 +123,7 @@ const Timer = ({
             reset();
         }
         if (action.reset) {
-            action.reset(context)
+            action.reset(context).then()
         }
     }, [timer]);
 
@@ -166,13 +164,14 @@ const Timer = ({
                 <span className="break-keep">{
                     currentState == startPoint ? "시작" : "초기화"
                 }</span>
-                    <button ref={buttonRef} onClick={() => {
+                    <button ref={buttonRef} onClick={async () => {
                         buttonRef.current.disabled = true
                         if (currentState == startPoint) {
                             const utterance = context.utterance ? context.utterance : initSpeech();
                             const buzzer = context.buzzer ? context.buzzer : setUpBuzzer();
                             const speechRecognition = context.utterance ? context.utterance : initialSpeechRecognition();
-                            const recorder = initialMicrophone(voiceStream)
+                            const newStream = await getMediaStream()
+                            const recorder = getMicrophone(newStream)
                             if (!utterance || !buzzer || !speechRecognition || !recorder) {
                                 alert("해당 브라우저는 음향 생성이 불가능합니다.")
                             }

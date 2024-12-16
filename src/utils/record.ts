@@ -20,7 +20,7 @@ export const startRecord = (recorder: MediaRecorder | null) => {
     }
 }
 
-export const initializeMediaStream = async () => {
+export const getMediaStream = async () => {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
             audio: {
@@ -36,7 +36,7 @@ export const initializeMediaStream = async () => {
     }
 }
 
-export const initialMicrophone = (
+export const getMicrophone = (
     stream?: MediaStream,
 ) => {
     if (!stream) {
