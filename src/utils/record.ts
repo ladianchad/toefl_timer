@@ -8,11 +8,11 @@ export const startRecord = (recorder: MediaRecorder | null) => {
         }
         recorder.onstop = () => {
             if (window.audioChunk.length === 0) {
-                console.error("No audio data was recorded.");
-                return;
+                alert("녹음 실패");
+                return;ㄴ
             }
 
-            const audioBlob = new Blob(window.audioChunk, {type: "audio/wav"});
+            const audioBlob = new Blob(window.audioChunk, {type: window.audioChunk[0].type});
             const url = URL.createObjectURL(audioBlob);
             document.dispatchEvent(new RecordEndEvent(url))
         }
