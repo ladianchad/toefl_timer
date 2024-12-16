@@ -15,7 +15,7 @@ const WritingArea = () => {
                 className="w-full border-2 grow border-gray-400 focus-within:border-gray-400 border-dashed"
             >
             <textarea id="writingSection"
-                      className="w-full h-full resize-y focus:outline-none focus:border-none p-2 resize-none"
+                      className="w-full h-full focus:outline-none focus:border-none p-2 resize-none"
                       spellCheck="false"
                       autoComplete="off"
                       autoCorrect="off"
