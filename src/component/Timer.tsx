@@ -168,20 +168,20 @@ const Timer = ({
                 }</span>
                     <button ref={buttonRef} onClick={(ev) => {
                         buttonRef.current.disabled = true
-                        const utterance = initSpeech();
-                        const buzzer = setUpBuzzer();
-                        const speechRecognition = initialSpeechRecognition();
-                        const recorder = initialMicrophone(voiceStream)
-                        if (!utterance || !buzzer || !speechRecognition || !recorder) {
-                            alert("해당 브라우저는 음향 생성이 불가능합니다.")
-                        }
-                        const newContext: ModeActionContext = {
-                            utterance: utterance,
-                            buzzer: buzzer,
-                            recorder: recorder
-                        }
-                        setContext(newContext);
                         if (currentState == startPoint) {
+                            const utterance = initSpeech();
+                            const buzzer = setUpBuzzer();
+                            const speechRecognition = initialSpeechRecognition();
+                            const recorder = initialMicrophone(voiceStream)
+                            if (!utterance || !buzzer || !speechRecognition || !recorder) {
+                                alert("해당 브라우저는 음향 생성이 불가능합니다.")
+                            }
+                            const newContext: ModeActionContext = {
+                                utterance: utterance,
+                                buzzer: buzzer,
+                                recorder: recorder
+                            }
+                            setContext(newContext);
                             if (action?.beforeStart && startPoint == -1) {
                                 action.beforeStart(newContext).then(() => {
                                     setCurrentState(startPoint + 1)
