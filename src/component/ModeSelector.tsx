@@ -29,6 +29,7 @@ const ModeSelector = ({
                     onChange={(item) => {
                         if (onModeChange) {
                             const mode = DefaultModes[item.currentTarget.value];
+                            window.history.pushState({}, "", `/toefl_timer/?m=${item.currentTarget.value}`)
                             onModeChange(mode)
                         }
                     }}>

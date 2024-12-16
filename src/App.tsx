@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import ModeSelector from "./component/ModeSelector";
 import {DefaultModes} from "./config/ModeConfig";
 import TimerControl from "./component/TimerControl";
@@ -7,10 +7,14 @@ import Footer from "./component/Footer";
 import MicrophoneContextProvider from "./component/MicrophoneContext";
 
 const App = () => {
-    const [mode, setMode] = useState(DefaultModes[0]);
+    const initMode = useMemo(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        const mode = parseInt(searchParams.get('m'))
+        return !isNaN(mode) && mode >= 0 && mode < DefaultModes.length ? mode : 0
+    }, []);
+    const [mode, setMode] = useState(DefaultModes[initMode]);
     const [isRunning, setIsRunning] = useState(false);
     const [timeConfig, setTimeConfig] = useState(mode.option);
-
     return (
         <>
             <h1 className="text-2xl font-bold text-center pb-2.5 bg-blue-950 text-white p-3 sticky top-0">TOEFL
