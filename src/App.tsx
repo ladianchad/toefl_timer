@@ -22,7 +22,9 @@ const App = () => {
             <div className="w-full grow p-4 font-sans flex flex-col gap-2">
                 <div className="flex flex-col gap-2 grow">
                     <MicrophoneContextProvider>
-                        <ModeSelector onModeChange={(newMode) => {
+                        <ModeSelector
+                            initMode={initMode}
+                            onModeChange={(newMode) => {
                             setIsRunning(false)
                             setMode(newMode)
                             setTimeConfig(newMode.option)
