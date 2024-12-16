@@ -37,7 +37,7 @@ export const DefaultModes: Mode[] = [
         comment: {
             beforeStart: "Speaking 문제를 준비하세요.",
             beforeMiddle: "Speaking 준비 시간.",
-            middle: "녹음중",
+            middle: "녹음중...",
             end: "수고하셨습니다."
         },
         contents: <RecordedSection key={"recordSection"}></RecordedSection>
@@ -51,7 +51,7 @@ export const DefaultModes: Mode[] = [
         comment: {
             beforeStart: "Speaking 문제를 준비하세요.",
             beforeMiddle: "Speaking 준비 시간.",
-            middle: "녹음중",
+            middle: "녹음중...",
             end: "수고하셨습니다."
         },
         contents: <RecordedSection key={"recordSection"}></RecordedSection>
