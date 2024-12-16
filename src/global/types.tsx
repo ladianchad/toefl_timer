@@ -14,12 +14,20 @@ export interface TimeConfig {
     runTime: number
 }
 
+
+export interface ModeActionContext {
+    buzzer?: unknown,
+    utterance?: SpeechSynthesisUtterance,
+    stream?: MediaStream,
+}
+
+type ModeActionType = (context: ModeActionContext) => Promise<void>
 export interface ModeAction {
-    beforeStart?: (buzzer?: unknown, utterance?: SpeechSynthesisUtterance) => Promise<void>
-    start?: (buzzer?: unknown, utterance?: SpeechSynthesisUtterance) => Promise<void>
-    beforeMiddle?: (buzzer?: unknown, utterance?: SpeechSynthesisUtterance) => Promise<void>
-    middle?: (buzzer?: unknown, utterance?: SpeechSynthesisUtterance) => Promise<void>
-    end?: (buzzer?: unknown, utterance?: SpeechSynthesisUtterance) => Promise<void>
+    beforeStart?: ModeActionType
+    start?: ModeActionType
+    beforeMiddle?: ModeActionType
+    middle?: ModeActionType
+    end?: ModeActionType
 }
 
 export interface ModeComment {

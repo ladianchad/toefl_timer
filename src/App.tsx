@@ -4,6 +4,7 @@ import {DefaultModes} from "./config/ModeConfig";
 import TimerControl from "./component/TimerControl";
 import Timer from "./component/Timer";
 import Footer from "./component/Footer";
+import MicrophoneContextProvider from "./component/MicrophoneContext";
 
 const App = () => {
     const [mode, setMode] = useState(DefaultModes[0]);
@@ -12,29 +13,32 @@ const App = () => {
 
     return (
         <>
-            <h1 className="text-2xl font-bold text-center pb-2.5 bg-blue-950 text-white p-3 sticky top-0">TOEFL UTILS</h1>
+            <h1 className="text-2xl font-bold text-center pb-2.5 bg-blue-950 text-white p-3 sticky top-0">TOEFL
+                UTILS</h1>
             <div className="w-full grow p-4 font-sans flex flex-col gap-2">
                 <div className="flex flex-col gap-2 grow">
-                    <ModeSelector onModeChange={(newMode) => {
-                        setIsRunning(false)
-                        setMode(newMode)
-                        setTimeConfig(newMode.option)
-                    }}/>
-                    <TimerControl disabled={isRunning} mode={mode} onChange={(time) => {
-                        setTimeConfig(time)
-                    }}/>
-                    <Timer
-                        smallClock={mode.smallClock}
-                        onStart={() => setIsRunning(true)}
-                        timeConfig={timeConfig}
-                        action={mode.action}
-                        comments={mode.comment}
-                        onAir={() => setIsRunning(true)}
-                        reset={() => setIsRunning(false)}
-                    />
-                    {
-                        mode.contents
-                    }
+                    <MicrophoneContextProvider>
+                        <ModeSelector onModeChange={(newMode) => {
+                            setIsRunning(false)
+                            setMode(newMode)
+                            setTimeConfig(newMode.option)
+                        }}/>
+                        <TimerControl disabled={isRunning} mode={mode} onChange={(time) => {
+                            setTimeConfig(time)
+                        }}/>
+                        <Timer
+                            smallClock={mode.smallClock}
+                            onStart={() => setIsRunning(true)}
+                            timeConfig={timeConfig}
+                            action={mode.action}
+                            comments={mode.comment}
+                            onAir={() => setIsRunning(true)}
+                            reset={() => setIsRunning(false)}
+                        />
+                        {
+                            mode.contents
+                        }
+                    </MicrophoneContextProvider>
                 </div>
                 <span className="text-xs font-bold flex justify-end">* 녹음 기능은 추후 추가 하겠습니다.</span>
                 <Footer/>

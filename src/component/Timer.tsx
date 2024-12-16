@@ -1,7 +1,8 @@
 import {useCallback, useEffect, useMemo, useState} from "react";
-import {ModeAction, ModeComment, TimeConfig} from "../global/types";
+import {ModeAction, ModeActionContext, ModeComment, TimeConfig} from "../global/types";
 import {initSpeech} from "../utils/speech";
 import {setUpBuzzer} from "../utils/buzzer";
+import {initialSpeechRecognition} from "../utils/speechRecognition";
 
 interface TimerProps {
     comments?: ModeComment,
@@ -24,8 +25,7 @@ const Timer = ({
     const [startPoint, setStartPoint] = useState(timeConfig.prepareTime ? -1 : 1);
     const [currentState, setCurrentState] = useState(timeConfig.prepareTime ? -1 : 1);
     const [timer, setTimer] = useState<number>(null);
-    const [buzzer, setBuzzer] = useState<any>();
-    const [utterance, setUtterance] = useState<any>();
+    const [context, setContext] = useState<ModeActionContext>({});
 
     useEffect(() => {
         const update = timeConfig.prepareTime ? -1 : 1;
@@ -48,7 +48,7 @@ const Timer = ({
         }
         if(currentState == 0){
             if (action?.start) {
-                action.start(buzzer, utterance).then(() => {
+                action.start(context).then(() => {
                     setRemain(timeConfig.prepareTime)
                     startCount()
                 })
@@ -59,7 +59,7 @@ const Timer = ({
         } else if (currentState == 1) {
             setRemain(timeConfig.runTime)
             if (action?.beforeMiddle) {
-                action.beforeMiddle(buzzer, utterance).then(() => {
+                action.beforeMiddle(context).then(() => {
                     setCurrentState(c => c + 1)
                 })
             } else {
@@ -67,7 +67,7 @@ const Timer = ({
             }
         } else if (currentState == 2) {
             if (action?.middle) {
-                action.middle(buzzer, utterance).then(() => {
+                action.middle(context).then(() => {
                     startCount()
                 })
             } else {
@@ -75,7 +75,7 @@ const Timer = ({
             }
         } else if (currentState == 3) {
             if (action?.end) {
-                action.end(buzzer, utterance).then(() => {
+                action.end(context).then(() => {
                     setCurrentState(c => c + 1);
                 })
             } else {
@@ -154,20 +154,25 @@ const Timer = ({
                     currentState == startPoint ? "시작" : "초기화"
                 }</span>
                     <button onClick={() => {
-                        let newUtterance = initSpeech();
-                        let newBuzzer = setUpBuzzer();
-                        setUtterance(newUtterance);
-                        setBuzzer(newBuzzer);
-                        if (!newUtterance || !newBuzzer) {
+                        const utterance = initSpeech();
+                        const buzzer = setUpBuzzer();
+                        const speechRecognition = initialSpeechRecognition()
+                        if (!utterance || !buzzer || !speechRecognition) {
                             alert("해당 브라우저는 음향 생성이 불가능합니다.")
                         }
+                        speechRecognition.start();
+                        const newContext: ModeActionContext = {
+                            utterance: utterance,
+                            buzzer: buzzer
+                        }
+                        setContext(newContext);
                         if (currentState == startPoint) {
                             if (action?.beforeStart && startPoint == -1) {
-                                action.beforeStart(buzzer, utterance).then(() => {
+                                action.beforeStart(newContext).then(() => {
                                     setCurrentState(startPoint + 1)
                                 });
                             } else if (action?.beforeMiddle && startPoint == 1) {
-                                action.beforeMiddle(buzzer, utterance).then(() => {
+                                action.beforeMiddle(newContext).then(() => {
                                     setCurrentState(startPoint + 1)
                                 })
                             } else {
@@ -175,8 +180,7 @@ const Timer = ({
                             }
                         } else {
                             resetCounter(timeConfig);
-                            setBuzzer(null);
-                            setUtterance(null);
+                            setContext({});
                         }
                     }}/>
                 </label>
