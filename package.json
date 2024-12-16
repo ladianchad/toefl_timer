@@ -6,6 +6,7 @@
   "repository": "git@github.com:ladianchad/-.git",
   "author": "ladianchad <qhrejddlvltm@gmail.com>",
   "license": "MIT",
+  "homepage": "https://ladianchad.github.io/toefl_timer/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
