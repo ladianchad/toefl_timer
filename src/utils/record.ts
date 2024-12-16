@@ -9,7 +9,7 @@ export const startRecord = (recorder: MediaRecorder | null) => {
         recorder.onstop = () => {
             if (window.audioChunk.length === 0) {
                 alert("녹음 실패");
-                return;ㄴ
+                return;
             }
 
             const audioBlob = new Blob(window.audioChunk, {type: window.audioChunk[0].type});
@@ -22,7 +22,12 @@ export const startRecord = (recorder: MediaRecorder | null) => {
 
 export const initializeMediaStream = async () => {
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+        const stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+                sampleRate: 16000,
+                echoCancellation: true
+            }
+        });
         console.log("Microphone initialized and ready to use.");
         return stream
     } catch (error) {
