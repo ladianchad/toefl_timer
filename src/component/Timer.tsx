@@ -169,9 +169,9 @@ const Timer = ({
                     <button ref={buttonRef} onClick={() => {
                         buttonRef.current.disabled = true
                         if (currentState == startPoint) {
-                            const utterance = initSpeech();
-                            const buzzer = setUpBuzzer();
-                            const speechRecognition = initialSpeechRecognition();
+                            const utterance = context.utterance ? context.utterance : initSpeech();
+                            const buzzer = context.buzzer ? context.buzzer : setUpBuzzer();
+                            const speechRecognition = context.utterance ? context.utterance : initialSpeechRecognition();
                             const recorder = initialMicrophone(voiceStream)
                             if (!utterance || !buzzer || !speechRecognition || !recorder) {
                                 alert("해당 브라우저는 음향 생성이 불가능합니다.")
