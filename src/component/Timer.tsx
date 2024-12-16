@@ -166,7 +166,7 @@ const Timer = ({
                 <span className="break-keep">{
                     currentState == startPoint ? "시작" : "초기화"
                 }</span>
-                    <button ref={buttonRef} onClick={(ev) => {
+                    <button ref={buttonRef} onClick={() => {
                         buttonRef.current.disabled = true
                         if (currentState == startPoint) {
                             const utterance = initSpeech();
