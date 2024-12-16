@@ -7,7 +7,7 @@ const RecordedSection = () => {
         title: string,
         content: string
         key: number
-    }[]>([]);
+    }[]>(JSON.parse(sessionStorage.getItem("audio_recorded") ?? "[]"));
 
     useEffect(() => {
         document.addEventListener("record_ended", (event: RecordEndEvent) => {
@@ -18,18 +18,21 @@ const RecordedSection = () => {
             const ss = pad(now.getSeconds()); // 초
             const key = recordList.length + 1
             setRecordLists(prevState => {
-                return [{
+                const updated = [{
                     title: `${hh}시 ${mm}분 ${ss}초`,
                     content: event.urlObject,
                     key: key
                 }, ...prevState]
+                sessionStorage.setItem("audio_recorded", JSON.stringify(updated))
+                return updated
             })
         })
     }, []);
 
     return <div className="flex flex-col gap-1 border-2 border-gray-600 px-2 py-1 rounded-md">
         <h3 className="font-bold pb-2 text-center text-gray-500 text-xl border-b">녹음 리스트</h3>
-        <div className={"flex flex-col w-full overflow-auto text-gray-200 font-bold gap-2 text-lg text-center min-h-36 max-h-48" + (recordList.length ? "" : " justify-center")}>
+        <div
+            className={"flex flex-col w-full overflow-auto text-gray-200 font-bold gap-2 text-lg text-center min-h-36 max-h-48" + (recordList.length ? "" : " justify-center")}>
             {
                 recordList.map((item) => {
                     return <div
@@ -50,7 +53,7 @@ const RecordedSection = () => {
                 })
             }
             {
-                recordList.length == 0 ? "아직 녹음 결과가 없습니다": ""
+                recordList.length == 0 ? "아직 녹음 결과가 없습니다" : ""
             }
         </div>
     </div>
