@@ -6,6 +6,7 @@ export interface Mode {
     action?: ModeAction
     comment?: ModeComment
     contents?: React.ReactNode
+    reset?: ModeActionType,
     smallClock?: boolean
 }
 
@@ -18,16 +19,17 @@ export interface TimeConfig {
 export interface ModeActionContext {
     buzzer?: unknown,
     utterance?: SpeechSynthesisUtterance,
-    stream?: MediaStream,
+    recorder?: MediaRecorder
 }
 
-type ModeActionType = (context: ModeActionContext) => Promise<void>
+export type ModeActionType = (context: ModeActionContext) => Promise<void>
 export interface ModeAction {
     beforeStart?: ModeActionType
     start?: ModeActionType
     beforeMiddle?: ModeActionType
     middle?: ModeActionType
     end?: ModeActionType
+    reset?: ModeActionType
 }
 
 export interface ModeComment {

@@ -1,8 +1,9 @@
-import {useCallback, useEffect, useMemo, useState} from "react";
-import {ModeAction, ModeActionContext, ModeComment, TimeConfig} from "../global/types";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {ModeAction, ModeActionType, ModeActionContext, ModeComment, TimeConfig} from "../global/types";
 import {initSpeech} from "../utils/speech";
 import {setUpBuzzer} from "../utils/buzzer";
 import {initialSpeechRecognition} from "../utils/speechRecognition";
+import {initializeMediaStream, initialMicrophone} from "../utils/record";
 
 interface TimerProps {
     comments?: ModeComment,
@@ -26,6 +27,14 @@ const Timer = ({
     const [currentState, setCurrentState] = useState(timeConfig.prepareTime ? -1 : 1);
     const [timer, setTimer] = useState<number>(null);
     const [context, setContext] = useState<ModeActionContext>({});
+    const [voiceStream, setVoiceStream] = useState<MediaStream>()
+    const buttonRef = useRef<HTMLButtonElement>(null)
+
+    useEffect(() => {
+        initializeMediaStream().then(stream => {
+            setVoiceStream(stream)
+        })
+    }, []);
 
     useEffect(() => {
         const update = timeConfig.prepareTime ? -1 : 1;
@@ -35,7 +44,8 @@ const Timer = ({
     }, [timeConfig]);
 
     useEffect(() => {
-        if(currentState > 3 && reset){
+        buttonRef.current.disabled = false
+        if (currentState > 3 && reset) {
             reset();
             return;
         } else if (startPoint != currentState && onAir) {
@@ -46,7 +56,7 @@ const Timer = ({
         } else if (startPoint == 1 && currentState < 2) {
             return;
         }
-        if(currentState == 0){
+        if (currentState == 0) {
             if (action?.start) {
                 action.start(context).then(() => {
                     setRemain(timeConfig.prepareTime)
@@ -114,6 +124,9 @@ const Timer = ({
         if (reset) {
             reset();
         }
+        if (action.reset) {
+            action.reset(context)
+        }
     }, [timer]);
 
     const displayComment = useMemo(() => {
@@ -153,17 +166,19 @@ const Timer = ({
                 <span className="break-keep">{
                     currentState == startPoint ? "시작" : "초기화"
                 }</span>
-                    <button onClick={() => {
+                    <button ref={buttonRef} onClick={(ev) => {
+                        buttonRef.current.disabled = true
                         const utterance = initSpeech();
                         const buzzer = setUpBuzzer();
-                        const speechRecognition = initialSpeechRecognition()
-                        if (!utterance || !buzzer || !speechRecognition) {
+                        const speechRecognition = initialSpeechRecognition();
+                        const recorder = initialMicrophone(voiceStream)
+                        if (!utterance || !buzzer || !speechRecognition || !recorder) {
                             alert("해당 브라우저는 음향 생성이 불가능합니다.")
                         }
-                        speechRecognition.start();
                         const newContext: ModeActionContext = {
                             utterance: utterance,
-                            buzzer: buzzer
+                            buzzer: buzzer,
+                            recorder: recorder
                         }
                         setContext(newContext);
                         if (currentState == startPoint) {
