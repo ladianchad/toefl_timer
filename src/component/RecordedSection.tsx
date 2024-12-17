@@ -2,6 +2,7 @@ import {useEffect, useState} from "react";
 import {RecordEndEvent} from "../utils/record";
 
 const RecordedSection = () => {
+    const [isOpen, setIsOpen] = useState(true)
 
     const [recordList, setRecordLists] = useState<{
         title: string,
@@ -29,10 +30,14 @@ const RecordedSection = () => {
         })
     }, []);
 
-    return <div className="flex flex-col gap-1 border-2 border-gray-600 px-2 py-1 rounded-md grow">
-        <h3 className="font-bold pb-2 text-center text-gray-500 text-xl border-b">녹음 리스트</h3>
+    return <div
+        className={"flex flex-col gap-1 border-2 border-gray-600 px-2 py-1 rounded-md" + (isOpen ? " grow" : "")}>
+        <h3
+            className={"font-bold text-center text-gray-500 text-xl" + (isOpen ? " border-b pb-2" : "")}
+            onClick={() => setIsOpen(!isOpen)}
+        >녹음 리스트</h3>
         <div
-            className={"flex flex-col w-full overflow-auto text-gray-200 font-bold gap-2 text-lg text-center min-h-36 max-h-48" + (recordList.length ? "" : " justify-center")}>
+            className={"flex flex-col w-full overflow-auto text-gray-200 font-bold gap-2 text-lg text-center min-h-36 max-h-48" + (recordList.length ? "" : " justify-center") + (isOpen ? "" : " hidden")}>
             {
                 recordList.map((item) => {
                     return <div

@@ -140,11 +140,11 @@ const Timer = ({
 
     return (
         <div
-            className={"w-full flex flex-col gap-2 p-2" + (remain < 10 && currentState != startPoint ? " text-red-500" : "")}>
-            <div className={"w-full flex " + (smallClock ? " justify-between border-b" : " flex-col")}>
-                <h3 className={"w-full font-bold " + (smallClock ? " text-xl" : " text-2xl text-center")}>{currentState < 1 ? "남은 준비 시간" : "남은 진행 시간"}</h3>
+            className={"w-full flex flex-col gap-2 p-2" + (remain < 10 && currentState != startPoint ? " text-red-500" : "") + (smallClock ? "" : " grow")}>
+            <div className={"w-full flex" + (smallClock ? " justify-between border-b" : " flex-col grow")}>
+                <h3 className={"w-full font-bold " + (smallClock ? " text-xl" : " text-3xl text-center")}>{currentState < 1 ? "남은 준비 시간" : "남은 진행 시간"}</h3>
                 <div
-                    className={"flex items-center w-full text-center tracking-normal gap-3" + (smallClock ? " text-[2.5em] justify-end" : " text-[5em] md:text-[8em] justify-center")}>
+                    className={"flex items-center w-full text-center tracking-normal gap-3" + (smallClock ? " text-[2.5em] justify-end" : " text-[5em] md:text-[8em] justify-center grow")}>
                     <span>{Math.floor(remain / 60).toString().padStart(2, "0")}</span>
                     :
                     <span>{Math.floor(remain % 60).toString().padStart(2, "0")}</span>
