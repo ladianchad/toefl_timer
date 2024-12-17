@@ -32,11 +32,6 @@ const Timer = ({
     const buttonRef = useRef<HTMLButtonElement>(null)
 
     useEffect(() => {
-        getMediaStream().then(() => {
-        })
-    }, []);
-
-    useEffect(() => {
         const update = timeConfig.prepareTime ? -1 : 1;
         setStartPoint(update);
         setCurrentState(update);
