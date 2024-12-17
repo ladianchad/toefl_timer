@@ -40,7 +40,7 @@ const TimerMenu = ({
                         max={36000}
                         value={value}
                         onClick={(event) => {
-                            if(disabled){
+                            if (disabled) {
                                 event.preventDefault()
                                 event.currentTarget.blur()
                                 alert("타이머가 작동 중엔 시간을 수정 할 수 없습니다.");
@@ -69,15 +69,21 @@ const TimerControl = ({
                           disabled
                       }: TimerControlProps) => {
     const [timeConfig, setTimeConfig] = useState(mode.option);
+    const [isOpen, setIsOpen] = useState(false)
 
     useEffect(() => {
         setTimeConfig(mode.option);
     }, [mode]);
 
     return (
-        <div className="flex flex-col gap-1 border-2 border-blue-300 px-2 py-1 rounded-md">
-            <h3 className="font-bold pb-2 text-center text-blue-500 text-xl border-b">시간 설정</h3>
-            <div className="py-2 flex flex-col gap-1">
+        <div className="flex flex-col gap-1 border-2 border-blue-300 px-2 py-1 rounded-md overflow-hidden">
+            <h3
+                className={"font-bold text-center text-blue-500 text-xl cursor-pointer" + (isOpen ? " border-b pb-2" : "")}
+                onClick={() => {
+                    setIsOpen(!isOpen)
+                }}
+            >시간 설정</h3>
+            <div className={"py-2 flex flex-col gap-1" + (isOpen ? "" : " hidden")}>
                 <TimerMenu
                     title="준비시간"
                     disabled={disabled}

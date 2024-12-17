@@ -2,7 +2,6 @@ import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {ModeAction, ModeActionContext, ModeComment, ModeRequiredPermission, TimeConfig} from "../global/types";
 import {initSpeech} from "../utils/speech";
 import {setUpBuzzer} from "../utils/buzzer";
-import {initialSpeechRecognition} from "../utils/speechRecognition";
 import {getMediaStream, getMicrophone} from "../utils/record";
 
 interface TimerProps {

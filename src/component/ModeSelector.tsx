@@ -24,7 +24,6 @@ const ModeSelector = ({
 
     return (
         <div className="w-full flex flex-col justify-center items-center gap-2">
-            <h2 className="font-bold whitespace-nowrap break-keep text-2xl">모드</h2>
             <label className="px-2 py-1 rounded border-2 w-full focus-within:border-2 focus-within:border-blue-600">
                 <select
                     id="modeSelection"

@@ -29,7 +29,7 @@ const RecordedSection = () => {
         })
     }, []);
 
-    return <div className="flex flex-col gap-1 border-2 border-gray-600 px-2 py-1 rounded-md">
+    return <div className="flex flex-col gap-1 border-2 border-gray-600 px-2 py-1 rounded-md grow">
         <h3 className="font-bold pb-2 text-center text-gray-500 text-xl border-b">녹음 리스트</h3>
         <div
             className={"flex flex-col w-full overflow-auto text-gray-200 font-bold gap-2 text-lg text-center min-h-36 max-h-48" + (recordList.length ? "" : " justify-center")}>
