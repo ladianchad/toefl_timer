@@ -31,7 +31,7 @@ const RecordedSection = () => {
     }, []);
 
     return <div
-        className={"flex flex-col gap-1 border-2 border-gray-600 px-2 py-1 rounded-md" + (isOpen ? " grow" : "")}>
+        className={"flex flex-col gap-1 border-2 border-gray-600 px-2 py-1 rounded-md cursor-pointer" + (isOpen ? " grow" : "")}>
         <h3
             className={"font-bold text-center text-gray-500 text-xl" + (isOpen ? " border-b pb-2" : "")}
             onClick={() => setIsOpen(!isOpen)}
