@@ -40,6 +40,9 @@ export const DefaultModes: Mode[] = [
             middle: "녹음중...",
             end: "수고하셨습니다."
         },
+        requiredPermission: {
+            mike: true
+        },
         contents: <RecordedSection key={"recordSection"}></RecordedSection>
     }, {
         name: "말하기 유형 2 (준비 30 초, 말하기 60 초)",
@@ -53,6 +56,9 @@ export const DefaultModes: Mode[] = [
             beforeMiddle: "Speaking 준비 시간.",
             middle: "녹음중...",
             end: "수고하셨습니다."
+        },
+        requiredPermission: {
+            mike: true
         },
         contents: <RecordedSection key={"recordSection"}></RecordedSection>
     }, {

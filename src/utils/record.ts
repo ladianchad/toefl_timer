@@ -31,6 +31,7 @@ export const getMediaStream = async () => {
         console.log("Microphone initialized and ready to use.");
         return stream
     } catch (error) {
+        alert("마이크에 접근이 불가능 합니다.");
         console.error("Microphone access denied.", error);
         return null
     }

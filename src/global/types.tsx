@@ -1,9 +1,14 @@
 import React from "react";
 
+export interface ModeRequiredPermission {
+    mike?: boolean
+}
+
 export interface Mode {
     name: string
     option: TimeConfig
     action?: ModeAction
+    requiredPermission?: ModeRequiredPermission
     comment?: ModeComment
     contents?: React.ReactNode
     reset?: ModeActionType,
@@ -23,6 +28,7 @@ export interface ModeActionContext {
 }
 
 export type ModeActionType = (context: ModeActionContext) => Promise<void>
+
 export interface ModeAction {
     beforeStart?: ModeActionType
     start?: ModeActionType

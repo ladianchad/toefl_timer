@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import {ModeAction, ModeActionContext, ModeComment, TimeConfig} from "../global/types";
+import {ModeAction, ModeActionContext, ModeComment, ModeRequiredPermission, TimeConfig} from "../global/types";
 import {initSpeech} from "../utils/speech";
 import {setUpBuzzer} from "../utils/buzzer";
 import {initialSpeechRecognition} from "../utils/speechRecognition";
@@ -8,6 +8,7 @@ import {getMediaStream, getMicrophone} from "../utils/record";
 interface TimerProps {
     comments?: ModeComment,
     action?: ModeAction,
+    permission?: ModeRequiredPermission,
     onAir?: () => void,
     reset?: () => void,
     smallClock?: boolean,
@@ -17,6 +18,7 @@ interface TimerProps {
 const Timer = ({
                    timeConfig,
                    action,
+                   permission,
                    onAir,
                    reset,
                    comments,
@@ -169,12 +171,11 @@ const Timer = ({
                         if (currentState == startPoint) {
                             const utterance = context.utterance ? context.utterance : initSpeech();
                             const buzzer = context.buzzer ? context.buzzer : setUpBuzzer();
-                            const speechRecognition = context.utterance ? context.utterance : initialSpeechRecognition();
-                            const newStream = await getMediaStream()
-                            const recorder = getMicrophone(newStream)
-                            if (!utterance || !buzzer || !speechRecognition || !recorder) {
+                            const recorder = permission?.mike ? getMicrophone(await getMediaStream()) : null
+                            if (!utterance || !buzzer) {
                                 alert("해당 브라우저는 음향 생성이 불가능합니다.")
                             }
+
                             const newContext: ModeActionContext = {
                                 utterance: utterance,
                                 buzzer: buzzer,

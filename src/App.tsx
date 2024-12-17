@@ -37,6 +37,7 @@ const App = () => {
                             onStart={() => setIsRunning(true)}
                             timeConfig={timeConfig}
                             action={mode.action}
+                            permission={mode.requiredPermission}
                             comments={mode.comment}
                             onAir={() => setIsRunning(true)}
                             reset={() => setIsRunning(false)}
